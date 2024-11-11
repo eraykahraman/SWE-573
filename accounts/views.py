@@ -6,13 +6,20 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 
 # Existing views
+#class CustomLoginView(LoginView):
+    #template_name = 'accounts/login.html'
+    #success_url = reverse_lazy('house')  # Changed from 'home' to 'house'
+
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
-    success_url = reverse_lazy('house')  # Changed from 'home' to 'house'
+
+    def get_success_url(self):
+        return reverse_lazy('post_list')  # Redirect to 'post_list' after login
+    
 
 
 class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy("login")  # Redirect to login page after logout    
+    next_page = reverse_lazy("post_list")  # Redirect to login page after logout    
 
 
 def register_view(request):
@@ -21,7 +28,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("home")
+            return redirect("login")
     else:
         form = UserCreationForm()
     return render(request, "accounts/register.html", {"form": form})

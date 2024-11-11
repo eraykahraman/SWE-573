@@ -4,7 +4,8 @@ from .views import CustomLoginView, CustomLogoutView, register_view, home_view
 
 urlpatterns = [
     path("login/", CustomLoginView.as_view(), name="login"),
-    path("logout/", CustomLogoutView.as_view(), name="logout"),
+    #path("logout/", CustomLogoutView.as_view(), name="logout"),
+    path("logout/", CustomLogoutView.as_view(next_page='post_list'), name="logout"),
     path("register/", register_view, name="register"),
     path("", home_view, name="home"),  # Home view
 ]

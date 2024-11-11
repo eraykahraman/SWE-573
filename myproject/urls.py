@@ -18,10 +18,14 @@ Including another URLconf
  #myproject/urls.py
 from django.contrib import admin
 from django.urls import path, include
+from posts import views as post_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', post_views.post_list, name='post_list'),  # Set main landing page to post_list view
     path('accounts/', include('accounts.urls')),
-    path('home/', include('home.urls')),  # Add this line to include home app URLs
-    path('', include('home.urls')),  # Redirect root URL to home app
-]
+    path('posts/', include('posts.urls')),
+    
+]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

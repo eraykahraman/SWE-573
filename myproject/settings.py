@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^g)kr6xh3corb7tvry+xp&9(l52faf95-hpuj#b6qr8=yw$h#a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1'] # docker ile geldi
 
 
 # Application definition
@@ -84,7 +84,8 @@ DATABASES = {
         'NAME': 'new_swe573_db',
         'USER': 'eray57',
         'PASSWORD': 'new_password',
-        'HOST': 'localhost',
+        #'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }

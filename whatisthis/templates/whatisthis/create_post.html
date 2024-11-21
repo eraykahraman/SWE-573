@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Create a New Post</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="form-group">
+                        <label for="tags-input">Tags (Search and Select)</label>
+                        <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">
+                        <div id="tags-suggestions" class="list-group mt-2"></div>
+                    </div>
+                    <input type="hidden" id="selected-tags" name="selected_tags">
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Create Post</button>
+                </form>
+                <a href="{% url 'home' %}" class="btn btn-secondary mt-3 w-100">Cancel</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tagsInput = document.getElementById('tags-input');
+        const tagsSuggestions = document.getElementById('tags-suggestions');
+        const selectedTagsField = document.getElementById('selected-tags');
+
+        let selectedTags = [];
+
+        tagsInput.addEventListener('input', async () => {
+            const query = tagsInput.value;
+            if (query.length < 2) {
+                tagsSuggestions.innerHTML = '';
+                return;
+            }
+
+            const response = await fetch(`/fetch-tags/?query=${query}`);
+            const tags = await response.json();
+
+            tagsSuggestions.innerHTML = '';
+            tags.forEach(tag => {
+                const tagElement = document.createElement('button');
+                tagElement.classList.add('list-group-item', 'list-group-item-action');
+                tagElement.textContent = `${tag.label} (${tag.wikidata_id})`;
+                tagElement.dataset.wikidataId = tag.wikidata_id;
+
+                tagElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (!selectedTags.find(t => t.wikidata_id === tag.wikidata_id)) {
+                        selectedTags.push(tag);
+                        updateSelectedTags();
+                    }
+                    tagsInput.value = '';
+                    tagsSuggestions.innerHTML = '';
+                });
+
+                tagsSuggestions.appendChild(tagElement);
+            });
+        });
+
+        function updateSelectedTags() {
+            selectedTagsField.value = JSON.stringify(selectedTags);
+            tagsSuggestions.innerHTML = selectedTags.map(tag => `
+                <span class="badge bg-secondary mx-1">${tag.label}</span>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

@@ -1,21 +1,31 @@
-# Virtual environment
+# Python-specific
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.env
+*.venv
+env/
 venv/
+ENV/
+env.bak/
+venv.bak/
 myvenv/
 
-# Python compiled files
-*.pyc
-__pycache__/
-
-# Environment variables
-.env
-
-# Logs
+# Django-specific
+db.sqlite3
 *.log
+*.pot
+*.py[cod]
+*.sqlite3
+*.sqlite3-journal
 
-# Django migrations
+# Media and Static Files
+/media/
+/staticfiles/
+
+# Migrations
 */migrations/*.py
 !*/migrations/__init__.py
 
-# PostgreSQL-specific (if any database dumps or files are generated locally)
-*.sql
-*.dump
+#

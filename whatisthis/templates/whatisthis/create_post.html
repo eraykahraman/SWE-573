@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load crispy_forms_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +14,7 @@
             <div class="col-md-6">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    {{ form|crispy }}
                     <div class="form-group">
                         <label for="tags-input">Tags (Search and Select)</label>
                         <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">

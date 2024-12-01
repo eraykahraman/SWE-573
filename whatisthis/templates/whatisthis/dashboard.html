@@ -1,0 +1,29 @@
+{% extends 'whatisthis/base.html' %}
+
+{% block title %}Dashboard - What Is This{% endblock %}
+
+{% block header %}
+    <h1 class="text-center">Your Dashboard</h1>
+    <div class="text-center mb-4">
+        <a href="{% url 'create_post' %}" class="btn btn-primary">Create Post</a>
+        <a href="{% url 'profile' %}" class="btn btn-primary">Profile</a>
+        <a href="{% url 'logout' %}" class="btn btn-primary">Logout</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="mt-5">
+        <h2>Your Posts</h2>
+        <div class="row">
+            {% for post in user_posts %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <!-- Similar post card structure but with edit/delete options -->
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-center">You haven't created any posts yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %} 

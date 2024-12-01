@@ -1,0 +1,70 @@
+{% extends 'whatisthis/base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h1>Welcome, {{ user.username }}!</h1>
+                <a href="{% url 'create_post' %}" class="btn btn-primary">Create New Post</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">Your Posts</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if user_posts %}
+                            {% for post in user_posts %}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ post.name }}</h5>
+                                        <p class="card-text">{{ post.description|truncatewords:30 }}</p>
+                                        {% if post.image %}
+                                            <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">You haven't created any posts yet.</p>
+                            <a href="{% url 'create_post' %}" class="btn btn-outline-primary btn-sm">Create Your First Post</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">Recent Posts</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if posts %}
+                            <div class="row">
+                                {% for post in posts %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ post.name }}</h5>
+                                                <p class="card-text">{{ post.description|truncatewords:30 }}</p>
+                                                {% if post.image %}
+                                                    <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
+                                                {% endif %}
+                                                <p class="card-text"><small class="text-muted">Posted by {{ post.author.username }}</small></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">No posts available yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

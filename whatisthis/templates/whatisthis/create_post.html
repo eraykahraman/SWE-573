@@ -1,77 +1,160 @@
-<!DOCTYPE html>
+{% extends 'whatisthis/base.html' %}
 {% load crispy_forms_tags %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Post</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Create a New Post</h1>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <div class="form-group">
-                        <label for="tags-input">Tags (Search and Select)</label>
-                        <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">
-                        <div id="tags-suggestions" class="list-group mt-2"></div>
-                    </div>
-                    <input type="hidden" id="selected-tags" name="selected_tags">
-                    <button type="submit" class="btn btn-primary w-100 mt-3">Create Post</button>
-                </form>
-                <a href="{% url 'home' %}" class="btn btn-secondary mt-3 w-100">Cancel</a>
-            </div>
+
+{% block title %}Create Post{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="text-center mb-4">Create a New Post</h1>
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p>{{ field.label }}: {{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="form-group">
+                    <label for="tags-input">Tags (Search and Select)</label>
+                    <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">
+                    <div id="tags-suggestions" class="list-group mt-2"></div>
+                    <div id="selected-tags-container" class="mt-2"></div>
+                    <div id="tag-error" class="text-danger small"></div>
+                </div>
+                <input type="hidden" id="selected-tags" name="selected_tags">
+                <button type="submit" class="btn btn-primary w-100 mt-3">Create Post</button>
+            </form>
+            <a href="{% url 'home' %}" class="btn btn-secondary mt-3 w-100">Cancel</a>
         </div>
     </div>
+{% endblock %}
 
-    <script>
-        const tagsInput = document.getElementById('tags-input');
-        const tagsSuggestions = document.getElementById('tags-suggestions');
-        const selectedTagsField = document.getElementById('selected-tags');
+{% block scripts %}
+{{ block.super }}
+<script>
+    const tagsInput = document.getElementById('tags-input');
+    const tagsSuggestions = document.getElementById('tags-suggestions');
+    const selectedTagsContainer = document.getElementById('selected-tags-container');
+    const selectedTagsField = document.getElementById('selected-tags');
+    const tagError = document.getElementById('tag-error');
 
-        let selectedTags = [];
+    let selectedTags = []; // Only for current post
+    const MAX_TAGS = 5;
 
-        tagsInput.addEventListener('input', async () => {
-            const query = tagsInput.value;
-            if (query.length < 2) {
-                tagsSuggestions.innerHTML = '';
-                return;
-            }
+    tagsInput.addEventListener('input', async () => {
+        const query = tagsInput.value.trim();
+        if (query.length < 2) {
+            tagsSuggestions.innerHTML = '';
+            return;
+        }
 
+        try {
             const response = await fetch(`/fetch-tags/?query=${query}`);
+            if (!response.ok) throw new Error('Failed to fetch tags');
             const tags = await response.json();
 
             tagsSuggestions.innerHTML = '';
+            
+            if (tags.length === 0) {
+                tagsSuggestions.innerHTML = '<div class="list-group-item text-muted">No tags found</div>';
+                return;
+            }
+
             tags.forEach(tag => {
-                const tagElement = document.createElement('button');
-                tagElement.classList.add('list-group-item', 'list-group-item-action');
-                tagElement.textContent = `${tag.label} (${tag.wikidata_id})`;
-                tagElement.dataset.wikidataId = tag.wikidata_id;
-
-                tagElement.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!selectedTags.find(t => t.wikidata_id === tag.wikidata_id)) {
-                        selectedTags.push(tag);
-                        updateSelectedTags();
-                    }
-                    tagsInput.value = '';
-                    tagsSuggestions.innerHTML = '';
-                });
-
-                tagsSuggestions.appendChild(tagElement);
+                // Only show tags that haven't been selected for this post
+                if (!selectedTags.find(t => t.wikidata_id === tag.wikidata_id)) {
+                    const tagElement = document.createElement('div');
+                    tagElement.classList.add('list-group-item', 'list-group-item-action');
+                    tagElement.textContent = tag.label;
+                    tagElement.addEventListener('click', () => {
+                        addTag(tag);
+                    });
+                    tagsSuggestions.appendChild(tagElement);
+                }
             });
-        });
-
-        function updateSelectedTags() {
-            selectedTagsField.value = JSON.stringify(selectedTags);
-            tagsSuggestions.innerHTML = selectedTags.map(tag => `
-                <span class="badge bg-secondary mx-1">${tag.label}</span>
-            `).join('');
+        } catch (error) {
+            tagsSuggestions.innerHTML = '<div class="list-group-item text-danger">Error loading tags</div>';
         }
-    </script>
-</body>
-</html>
+    });
+
+    function addTag(tag) {
+        if (selectedTags.length >= MAX_TAGS) {
+            tagError.textContent = `Maximum ${MAX_TAGS} tags allowed`;
+            return;
+        }
+
+        selectedTags.push(tag);
+        updateSelectedTags();
+        tagError.textContent = '';
+        tagsInput.value = '';
+        tagsSuggestions.innerHTML = '';
+    }
+
+    function removeTag(wikidataId) {
+        selectedTags = selectedTags.filter(tag => tag.wikidata_id !== wikidataId);
+        updateSelectedTags();
+        tagError.textContent = '';
+    }
+
+    function updateSelectedTags() {
+        selectedTagsField.value = JSON.stringify(selectedTags);
+        
+        selectedTagsContainer.innerHTML = selectedTags.map(tag => `
+            <span class="badge bg-primary me-2 mb-2 p-2">
+                ${tag.label}
+                <button type="button" class="btn-close btn-close-white ms-2" 
+                        onclick="removeTag('${tag.wikidata_id}')" 
+                        style="font-size: 0.5em;">
+                </button>
+            </span>
+        `).join('');
+
+        if (selectedTags.length >= MAX_TAGS) {
+            tagsInput.disabled = true;
+            tagsInput.placeholder = 'Maximum tags reached';
+        } else {
+            tagsInput.disabled = false;
+            tagsInput.placeholder = 'Search for tags';
+        }
+    }
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (selectedTags.length === 0) {
+            e.preventDefault();
+            tagError.textContent = 'Please add at least one tag';
+        }
+    });
+</script>
+
+<style>
+    .badge .btn-close {
+        padding: 0.25em;
+        margin-left: 0.5em;
+        cursor: pointer;
+    }
+    
+    #tags-suggestions {
+        max-height: 200px;
+        overflow-y: auto;
+        position: absolute;
+        width: 100%;
+        z-index: 1000;
+    }
+
+    .list-group-item {
+        cursor: pointer;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

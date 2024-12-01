@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from whatisthis import views as pp
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('whatisthis.urls')),  # Main app
     path('accounts/', include('accounts.urls')),  # Authentication app
+    path('profile/', pp.profile, name='profile'),
 ]
 
 # Serve uploaded media files during development

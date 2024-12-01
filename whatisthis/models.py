@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 # Create your models here.
 class Tag(models.Model):
     wikidata_id = models.CharField(max_length=20, unique=True, verbose_name="Wikidata ID")
@@ -11,7 +14,7 @@ class Tag(models.Model):
 class Post(models.Model):
     name = models.CharField(max_length=200, verbose_name="Object Name")
     description = models.TextField(verbose_name="Description")
-    image = models.ImageField(upload_to='images/', blank=True, null=True, verbose_name="Main Image of the Object")  # Add this field
+    image = models.ImageField(upload_to='post_images/', null=True, blank=False)
     material = models.CharField(max_length=100, blank=True, null=True, verbose_name="Material")
     size = models.CharField(max_length=100, blank=True, null=True, verbose_name="Size")
     shape = models.CharField(max_length=100, blank=True, null=True, verbose_name="Shape")
@@ -50,6 +53,25 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.name}"
+    
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    occupation = models.CharField(max_length=100, blank=True)
+    about_me = models.TextField(max_length=500, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', default='profile_pics/default.jpg')
+
+    def __str__(self):
+        return f'{self.user.username} Profile'
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
     
 
 

@@ -6,6 +6,7 @@ urlpatterns = [
     path('', home, name='home'),
     path('create/', create_post, name='create_post'),
     path('fetch-tags/', fetch_tags, name='fetch_tags'),
+    path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     
     
 ]

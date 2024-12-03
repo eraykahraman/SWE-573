@@ -11,21 +11,26 @@ from django.contrib import messages
 from django.http import HttpResponse
 
 # Home view: Display all posts
-
 def home(request):
     # Get all posts for everyone, ordered by newest first
     posts = Post.objects.all().order_by('-created_at')
     
     if request.user.is_authenticated:
         user_posts = Post.objects.filter(author=request.user)
+        # Get comments for each post
+        for post in posts:
+            post.comment_list = Comment.objects.filter(post=post).order_by('-created_at')
         return render(request, 'whatisthis/user_dashboard.html', {
             'posts': posts,
             'comment_form': CommentForm(),
             'user_posts': user_posts,
         })
     else:
+        # Get comments for each post for non-authenticated users too
+        for post in posts:
+            post.comment_list = Comment.objects.filter(post=post).order_by('-created_at')
         return render(request, 'whatisthis/home.html', {
-            'posts': posts,  # Now passing posts to non-authenticated view
+            'posts': posts,
             'comment_form': CommentForm()
         })
 
@@ -139,4 +144,19 @@ def profile (request):
         'user_posts': Post.objects.filter(author=request.user)
     }
     return render(request, 'whatisthis/profile.html', context)
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+            messages.success(request, 'Comment added successfully!')
+        else:
+            messages.error(request, 'Error adding comment.')
+    return redirect('home')
 

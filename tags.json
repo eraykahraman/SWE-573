@@ -1,0 +1,90 @@
+[
+{
+  "model": "whatisthis.tag",
+  "pk": 1,
+  "fields": {
+    "wikidata_id": "Q16869924",
+    "label": "Fender"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 2,
+  "fields": {
+    "wikidata_id": "Q23860797",
+    "label": "Amfi"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 3,
+  "fields": {
+    "wikidata_id": "Q21101062",
+    "label": "ERAD pathway"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 4,
+  "fields": {
+    "wikidata_id": "Q191",
+    "label": "Estonia"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 5,
+  "fields": {
+    "wikidata_id": "Q81741",
+    "label": "magic"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 6,
+  "fields": {
+    "wikidata_id": "Q15228",
+    "label": "The Lord of the Rings"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 7,
+  "fields": {
+    "wikidata_id": "Q142714",
+    "label": "card game"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 8,
+  "fields": {
+    "wikidata_id": "Q5",
+    "label": "human"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 9,
+  "fields": {
+    "wikidata_id": "Q29527347",
+    "label": "figure"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 10,
+  "fields": {
+    "wikidata_id": "Q25114838",
+    "label": "Coin"
+  }
+},
+{
+  "model": "whatisthis.tag",
+  "pk": 11,
+  "fields": {
+    "wikidata_id": "Q506796",
+    "label": "Big Mac"
+  }
+}
+]

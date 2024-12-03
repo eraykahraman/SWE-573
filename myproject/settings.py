@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'eraydb',        # Your PostgreSQL database name
-        'USER': 'erayswe',       # Your PostgreSQL username
-        'PASSWORD': 'swesweswe', # Your PostgreSQL password
-        'HOST': 'localhost',     # Host (use 'localhost' for local setup)
-        'PORT': '5432',          # Default PostgreSQL port
+        'NAME': 'eraydb',
+        'USER': 'erayswe',
+        'PASSWORD': 'swesweswe',
+        'HOST': 'db',
+        'PORT': '5432',
     }
 }
 
@@ -138,3 +138,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'

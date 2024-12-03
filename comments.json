@@ -1,0 +1,62 @@
+[
+{
+  "model": "whatisthis.comment",
+  "pk": 2,
+  "fields": {
+    "post": 6,
+    "author": 4,
+    "content": "bu ne",
+    "created_at": "2024-12-02T15:06:54.791Z",
+    "likes": [],
+    "dislikes": []
+  }
+},
+{
+  "model": "whatisthis.comment",
+  "pk": 3,
+  "fields": {
+    "post": 6,
+    "author": 4,
+    "content": "hadi be",
+    "created_at": "2024-12-02T15:07:02.183Z",
+    "likes": [],
+    "dislikes": []
+  }
+},
+{
+  "model": "whatisthis.comment",
+  "pk": 4,
+  "fields": {
+    "post": 6,
+    "author": 2,
+    "content": "fsdgads",
+    "created_at": "2024-12-02T16:03:05.121Z",
+    "likes": [],
+    "dislikes": []
+  }
+},
+{
+  "model": "whatisthis.comment",
+  "pk": 5,
+  "fields": {
+    "post": 7,
+    "author": 2,
+    "content": "Cool card! is it from magic?",
+    "created_at": "2024-12-03T08:42:16.675Z",
+    "likes": [],
+    "dislikes": []
+  }
+},
+{
+  "model": "whatisthis.comment",
+  "pk": 6,
+  "fields": {
+    "post": 8,
+    "author": 2,
+    "content": "is it a man figure ?",
+    "created_at": "2024-12-03T08:42:40.038Z",
+    "likes": [],
+    "dislikes": []
+  }
+}
+]

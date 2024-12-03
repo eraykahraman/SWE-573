@@ -1,0 +1,86 @@
+[
+{
+  "model": "whatisthis.post",
+  "pk": 6,
+  "fields": {
+    "name": "eray",
+    "description": "sdasd",
+    "image": "post_images/1951-Fender-Deluxe-USA-5A3-320x450.png",
+    "material": "wood",
+    "size": null,
+    "shape": null,
+    "text_and_language": null,
+    "found_location": null,
+    "color": null,
+    "author": 1,
+    "created_at": "2024-12-01T19:07:18.583Z",
+    "tags": [
+      3
+    ]
+  }
+},
+{
+  "model": "whatisthis.post",
+  "pk": 7,
+  "fields": {
+    "name": "cool card",
+    "description": "I found this card from dads collection. Do you know anything specficic about it ?",
+    "image": "post_images/WhatsApp_Image_2024-11-24_at_18.05.31.jpeg",
+    "material": "paper",
+    "size": "5x7",
+    "shape": "rectangle",
+    "text_and_language": "elvish",
+    "found_location": "Ankara/yenimahalle",
+    "color": "red",
+    "author": 2,
+    "created_at": "2024-12-02T16:15:37.699Z",
+    "tags": [
+      5,
+      6,
+      7
+    ]
+  }
+},
+{
+  "model": "whatisthis.post",
+  "pk": 8,
+  "fields": {
+    "name": "weaird metal human figure",
+    "description": "I found this figure on the road today, can you help me identify that",
+    "image": "post_images/WhatsApp_Image_2024-11-24_at_18.05.28_1.jpeg",
+    "material": "metal",
+    "size": "2x5 cm",
+    "shape": "human shape",
+    "text_and_language": null,
+    "found_location": "sarıyer",
+    "color": "grey",
+    "author": 4,
+    "created_at": "2024-12-02T16:18:15.988Z",
+    "tags": [
+      8,
+      9
+    ]
+  }
+},
+{
+  "model": "whatisthis.post",
+  "pk": 9,
+  "fields": {
+    "name": "coin",
+    "description": "one of my friends gave me this coin do you know anyhting specific about it ?",
+    "image": "post_images/WhatsApp_Image_2024-11-24_at_18.05.28.jpeg",
+    "material": "metal",
+    "size": "1x1 cm",
+    "shape": "circle",
+    "text_and_language": "english",
+    "found_location": "sarıyer/istanbul",
+    "color": "yellow",
+    "author": 1,
+    "created_at": "2024-12-03T09:09:49.537Z",
+    "tags": [
+      10,
+      11
+    ]
+  }
+}
+]

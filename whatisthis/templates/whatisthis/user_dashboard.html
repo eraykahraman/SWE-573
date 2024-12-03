@@ -21,10 +21,29 @@
                                 <div class="card mb-3">
                                     <div class="card-body">
                                         <h5 class="card-title">{{ post.name }}</h5>
-                                        <p class="card-text">{{ post.description|truncatewords:30 }}</p>
+                                        <p class="card-text">{{ post.description }}</p>
                                         {% if post.image %}
                                             <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
                                         {% endif %}
+                                        <div class="post-details">
+                                            <p><strong>Material:</strong> {{ post.material }}</p>
+                                            <p><strong>Size:</strong> {{ post.size }}</p>
+                                            <p><strong>Shape:</strong> {{ post.shape }}</p>
+                                            <p><strong>Text & Language:</strong> {{ post.text_and_language }}</p>
+                                            <p><strong>Found Location:</strong> {{ post.found_location }}</p>
+                                            <p><strong>Color:</strong> {{ post.color }}</p>
+                                            <p><strong>Tags:</strong> 
+                                            {% with post_tags=post.tags.all %}
+                                                {% if post_tags %}
+                                                    {% for tag in post_tags %}
+                                                        <span class="badge bg-secondary">{{ tag }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-muted">No tags</span>
+                                                {% endif %}
+                                            {% endwith %}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -49,10 +68,29 @@
                                         <div class="card h-100">
                                             <div class="card-body">
                                                 <h5 class="card-title">{{ post.name }}</h5>
-                                                <p class="card-text">{{ post.description|truncatewords:30 }}</p>
+                                                <p class="card-text">{{ post.description }}</p>
                                                 {% if post.image %}
                                                     <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
                                                 {% endif %}
+                                                <div class="post-details">
+                                                    <p><strong>Material:</strong> {{ post.material }}</p>
+                                                    <p><strong>Size:</strong> {{ post.size }}</p>
+                                                    <p><strong>Shape:</strong> {{ post.shape }}</p>
+                                                    <p><strong>Text & Language:</strong> {{ post.text_and_language }}</p>
+                                                    <p><strong>Found Location:</strong> {{ post.found_location }}</p>
+                                                    <p><strong>Color:</strong> {{ post.color }}</p>
+                                                    <p><strong>Tags:</strong> 
+                                                    {% with post_tags=post.tags.all %}
+                                                        {% if post_tags %}
+                                                            {% for tag in post_tags %}
+                                                                <span class="badge bg-secondary">{{ tag }}</span>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <span class="text-muted">No tags</span>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    </p>
+                                                </div>
                                                 <p class="card-text"><small class="text-muted">Posted by {{ post.author.username }}</small></p>
                                                 
                                                 <!-- Comments Section -->

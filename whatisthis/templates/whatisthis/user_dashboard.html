@@ -1,6 +1,31 @@
 {% extends 'whatisthis/base.html' %}
 
 {% block content %}
+    {% csrf_token %}
+
+    <script>
+        function toggleStatus(postId) {
+            fetch(`/toggle-status/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    // Update all status badges for this post
+                    document.querySelectorAll(`.status-badge-${postId}`).forEach(badge => {
+                        badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                        badge.classList.remove('status-open', 'status-solved');
+                        badge.classList.add(`status-${data.status}`);
+                    });
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+
     <style>
         .status-badge {
             padding: 6px 12px;
@@ -25,6 +50,16 @@
             color: #155724;  /* Dark green text */
             border: 1px solid #c3e6cb;
         }
+
+        /* Add these new hover effects */
+        .status-badge[onclick] {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .status-badge[onclick]:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
     </style>
 
     <div class="container">
@@ -46,7 +81,7 @@
                             {% for post in user_posts %}
                                 <div class="card mb-3">
                                     <div class="card-body">
-                                        <div class="status-badge {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
+                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" {% if user == post.author %} onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status"{% endif %}>
                                             {{ post.status|title }}
                                         </div>
                                         <h5 class="card-title">{{ post.name }}</h5>
@@ -96,7 +131,7 @@
                                     <div class="col-md-6 mb-4">
                                         <div class="card h-100">
                                             <div class="card-body">
-                                                <div class="status-badge {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
+                                                <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" {% if user == post.author %} onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status"{% endif %}>
                                                     {{ post.status|title }}
                                                 </div>
                                                 <h5 class="card-title">{{ post.name }}</h5>

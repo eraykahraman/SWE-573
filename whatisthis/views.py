@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from .models import Post
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, ProfileUpdateForm
 from django.http import JsonResponse
 import requests
 from .models import Tag,Comment
@@ -130,7 +130,7 @@ def fetch_tags(request):
     return JsonResponse([], safe=False)
 
 @login_required
-def profile (request):
+def profile(request):
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
         if form.is_valid():
@@ -142,7 +142,7 @@ def profile (request):
     
     context = {
         'form': form,
-        'user_posts': Post.objects.filter(author=request.user)
+        'user_posts': Post.objects.filter(author=request.user).order_by('-created_at')
     }
     return render(request, 'whatisthis/profile.html', context)
 

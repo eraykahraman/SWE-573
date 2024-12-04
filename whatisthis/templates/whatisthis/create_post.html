@@ -20,7 +20,54 @@
             
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form|crispy }}
+                {# Display name, description, and image fields #}
+                {{ form.name|as_crispy_field }}
+                {{ form.description|as_crispy_field }}
+                {{ form.image|as_crispy_field }}
+                
+                {# Display dimensions after image #}
+                <div class="row mb-3">
+                    <h5>Object Dimensions</h5>
+                    <div class="col-md-4">
+                        {{ form.size_x|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.size_y|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.size_z|as_crispy_field }}
+                    </div>
+                </div>
+
+                {# Display material field as a dropdown #}
+                <div class="form-group">
+                    <label for="material">Material</label>
+                    <select id="material" name="material" class="form-control" onchange="toggleOtherMaterialInput(this)">
+                        <option value="wood">Wood</option>
+                        <option value="plastic">Plastic</option>
+                        <option value="metal">Metal</option>
+                        <option value="glass">Glass</option>
+                        <option value="ceramic">Ceramic</option>
+                        <option value="fabric">Fabric/Textile</option>
+                        <option value="leather">Leather</option>
+                        <option value="paper">Paper/Cardboard</option>
+                        <option value="rubber">Rubber</option>
+                        <option value="stone">Stone/Marble</option>
+                        <option value="composite">Composite</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group" id="other-material-container" style="display: none;">
+                    <label for="other-material">Specify Material</label>
+                    <input type="text" id="other-material" name="other_material" class="form-control" placeholder="Specify other material">
+                </div>
+
+                {# Display remaining fields #}
+                {{ form.shape|as_crispy_field }}
+                {{ form.text_and_language|as_crispy_field }}
+                {{ form.found_location|as_crispy_field }}
+                {{ form.color|as_crispy_field }}
+
                 <div class="form-group">
                     <label for="tags-input">Tags (Search and Select)</label>
                     <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">
@@ -155,6 +202,42 @@
 
     .list-group-item:hover {
         background-color: #f8f9fa;
+    }
+
+    /* Style for dimension dropdowns */
+    select.form-control {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+    .dimensions-container {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .dimensions-container h5 {
+        color: #495057;
+        margin-bottom: 15px;
+    }
+
+    /* Style for material dropdown */
+    select.form-control {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1em;
+        padding-right: 2.5rem;
+    }
+
+    select.form-control::-ms-expand {
+        display: none;
     }
 </style>
 {% endblock %}

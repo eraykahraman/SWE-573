@@ -24,6 +24,15 @@
             })
             .catch(error => console.error('Error:', error));
         }
+
+        function toggleYourPosts() {
+            const yourPostsSection = document.getElementById('your-posts-section');
+            if (yourPostsSection.style.display === 'none') {
+                yourPostsSection.style.display = 'block';
+            } else {
+                yourPostsSection.style.display = 'none';
+            }
+        }
     </script>
 
     <style>
@@ -67,10 +76,11 @@
             <div class="col-12 mb-4">
                 <h1>Welcome, {{ user.username }}!</h1>
                 <a href="{% url 'create_post' %}" class="btn btn-primary">Create New Post</a>
+                <button onclick="toggleYourPosts()" class="btn btn-secondary">Your Posts</button>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row" id="your-posts-section" style="display: none;">
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header">
@@ -118,7 +128,9 @@
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">

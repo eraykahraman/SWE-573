@@ -9,4 +9,5 @@ urlpatterns = [
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('toggle-status/<int:post_id>/', views.toggle_post_status, name='toggle_post_status'),
     path('profile/', views.profile, name='profile'),
+    path('edit-post/<int:post_id>/', views.edit_post, name='edit_post'),
 ]

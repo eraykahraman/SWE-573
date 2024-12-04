@@ -69,6 +69,41 @@
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .edit-button {
+            background-color: #f8f9fa;
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-left: 10px;
+            display: inline-block;
+        }
+
+        .edit-button:hover {
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+        }
+
+        .status-and-edit {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
     </style>
 
     <div class="container">
@@ -91,8 +126,14 @@
                             {% for post in user_posts %}
                                 <div class="card mb-3">
                                     <div class="card-body">
-                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" {% if user == post.author %} onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status"{% endif %}>
-                                            {{ post.status|title }}
+                                        <div class="status-and-edit">
+                                            <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" 
+                                                onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status">
+                                                {{ post.status|title }}
+                                            </div>
+                                            <a href="{% url 'edit_post' post.id %}" class="edit-button">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
                                         </div>
                                         <h5 class="card-title">{{ post.name }}</h5>
                                         <p class="card-text">{{ post.description }}</p>
@@ -139,7 +180,7 @@
                             <div class="col-md-4 mb-4">
                                 <div class="card h-100">
                                     <div class="card-body">
-                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" {% if user == post.author %} onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status"{% endif %}>
+                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
                                             {{ post.status|title }}
                                         </div>
                                         <h5 class="card-title">{{ post.name }}</h5>

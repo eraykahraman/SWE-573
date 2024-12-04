@@ -1,0 +1,283 @@
+{% extends 'whatisthis/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="text-center mb-4">Edit Post</h1>
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p>{{ field.label }}: {{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                {% csrf_token %}
+                {# Display name, description, and current image #}
+                {{ form.name|as_crispy_field }}
+                {{ form.description|as_crispy_field }}
+                
+                {% if post.image %}
+                    <div class="mb-3">
+                        <label>Current Image:</label>
+                        <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}" style="max-height: 200px;">
+                    </div>
+                {% endif %}
+                {{ form.image|as_crispy_field }}
+                
+                {# Display dimensions #}
+                <div class="row mb-3">
+                    <h5>Object Dimensions</h5>
+                    <div class="col-md-4">
+                        {{ form.size_x|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.size_y|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.size_z|as_crispy_field }}
+                    </div>
+                </div>
+
+                {# Display material field as a dropdown #}
+                <div class="form-group">
+                    <label for="material">Material</label>
+                    <select id="material" name="material" class="form-control" onchange="toggleOtherMaterialInput(this)">
+                        <option value="wood" {% if post.material == 'wood' %}selected{% endif %}>Wood</option>
+                        <option value="plastic" {% if post.material == 'plastic' %}selected{% endif %}>Plastic</option>
+                        <option value="metal" {% if post.material == 'metal' %}selected{% endif %}>Metal</option>
+                        <option value="glass" {% if post.material == 'glass' %}selected{% endif %}>Glass</option>
+                        <option value="ceramic" {% if post.material == 'ceramic' %}selected{% endif %}>Ceramic</option>
+                        <option value="fabric" {% if post.material == 'fabric' %}selected{% endif %}>Fabric/Textile</option>
+                        <option value="leather" {% if post.material == 'leather' %}selected{% endif %}>Leather</option>
+                        <option value="paper" {% if post.material == 'paper' %}selected{% endif %}>Paper/Cardboard</option>
+                        <option value="rubber" {% if post.material == 'rubber' %}selected{% endif %}>Rubber</option>
+                        <option value="stone" {% if post.material == 'stone' %}selected{% endif %}>Stone/Marble</option>
+                        <option value="composite" {% if post.material == 'composite' %}selected{% endif %}>Composite</option>
+                        <option value="other" {% if post.material not in 'wood,plastic,metal,glass,ceramic,fabric,leather,paper,rubber,stone,composite' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="form-group" id="other-material-container" style="display: none;">
+                    <label for="other-material">Specify Material</label>
+                    <input type="text" id="other-material" name="other_material" class="form-control" placeholder="Specify other material">
+                </div>
+
+                {# Display shape field as a dropdown #}
+                <div class="form-group mt-3">
+                    <label for="shape">Shape</label>
+                    <select id="shape" name="shape" class="form-control">
+                        <option value="none" {% if post.shape == 'none' or not post.shape %}selected{% endif %}>None</option>
+                        <option value="cylindrical" {% if post.shape == 'cylindrical' %}selected{% endif %}>Cylindrical</option>
+                        <option value="rectangular" {% if post.shape == 'rectangular' %}selected{% endif %}>Rectangular</option>
+                        <option value="spherical" {% if post.shape == 'spherical' %}selected{% endif %}>Spherical</option>
+                        <option value="cubic" {% if post.shape == 'cubic' %}selected{% endif %}>Cubic</option>
+                        <option value="triangular" {% if post.shape == 'triangular' %}selected{% endif %}>Triangular</option>
+                        <option value="irregular" {% if post.shape == 'irregular' %}selected{% endif %}>Irregular</option>
+                    </select>
+                </div>
+
+                {{ form.text_and_language|as_crispy_field }}
+                {{ form.found_location|as_crispy_field }}
+                
+                {# Display color field as a dropdown #}
+                <div class="form-group mt-3">
+                    <label for="color">Color</label>
+                    <select id="color" name="color" class="form-control">
+                        <option value="none" {% if post.color == 'none' or not post.color %}selected{% endif %}>None</option>
+                        <option value="black" {% if post.color == 'black' %}selected{% endif %}>Black</option>
+                        <option value="white" {% if post.color == 'white' %}selected{% endif %}>White</option>
+                        <option value="gray" {% if post.color == 'gray' %}selected{% endif %}>Gray</option>
+                        <option value="red" {% if post.color == 'red' %}selected{% endif %}>Red</option>
+                        <option value="blue" {% if post.color == 'blue' %}selected{% endif %}>Blue</option>
+                        <option value="green" {% if post.color == 'green' %}selected{% endif %}>Green</option>
+                        <option value="yellow" {% if post.color == 'yellow' %}selected{% endif %}>Yellow</option>
+                        <option value="purple" {% if post.color == 'purple' %}selected{% endif %}>Purple</option>
+                        <option value="orange" {% if post.color == 'orange' %}selected{% endif %}>Orange</option>
+                        <option value="brown" {% if post.color == 'brown' %}selected{% endif %}>Brown</option>
+                        <option value="pink" {% if post.color == 'pink' %}selected{% endif %}>Pink</option>
+                        <option value="gold" {% if post.color == 'gold' %}selected{% endif %}>Gold</option>
+                        <option value="silver" {% if post.color == 'silver' %}selected{% endif %}>Silver</option>
+                        <option value="bronze" {% if post.color == 'bronze' %}selected{% endif %}>Bronze</option>
+                        <option value="multicolor" {% if post.color == 'multicolor' %}selected{% endif %}>Multicolor</option>
+                        <option value="other" {% if post.color == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="tags-input">Tags (Search and Select)</label>
+                    <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">
+                    <div id="tags-suggestions" class="list-group mt-2"></div>
+                    <div id="selected-tags-container" class="mt-2"></div>
+                    <div id="tag-error" class="text-danger small"></div>
+                </div>
+                <input type="hidden" id="selected-tags" name="selected_tags">
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    <a href="{% url 'home' %}" class="btn btn-secondary w-100 mt-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    // Initialize existing tags
+    let selectedTags = {{ existing_tags|safe }};
+    
+    const tagsInput = document.getElementById('tags-input');
+    const tagsSuggestions = document.getElementById('tags-suggestions');
+    const selectedTagsContainer = document.getElementById('selected-tags-container');
+    const selectedTagsField = document.getElementById('selected-tags');
+    const tagError = document.getElementById('tag-error');
+    const MAX_TAGS = 5;
+
+    // Function to handle "Other" material option
+    function toggleOtherMaterialInput(select) {
+        const otherContainer = document.getElementById('other-material-container');
+        if (select.value === 'other') {
+            otherContainer.style.display = 'block';
+        } else {
+            otherContainer.style.display = 'none';
+        }
+    }
+
+    // Initialize material dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        const materialSelect = document.getElementById('material');
+        toggleOtherMaterialInput(materialSelect);
+    });
+
+    // Update selected tags display on load
+    updateSelectedTags();
+
+    tagsInput.addEventListener('input', async () => {
+        const query = tagsInput.value.trim();
+        if (query.length < 2) {
+            tagsSuggestions.innerHTML = '';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/fetch-tags/?query=${query}`);
+            if (!response.ok) throw new Error('Failed to fetch tags');
+            const tags = await response.json();
+
+            tagsSuggestions.innerHTML = '';
+            
+            if (tags.length === 0) {
+                tagsSuggestions.innerHTML = '<div class="list-group-item text-muted">No tags found</div>';
+                return;
+            }
+
+            tags.forEach(tag => {
+                if (!selectedTags.find(t => t.wikidata_id === tag.wikidata_id)) {
+                    const tagElement = document.createElement('div');
+                    tagElement.classList.add('list-group-item', 'list-group-item-action');
+                    tagElement.textContent = tag.label;
+                    tagElement.addEventListener('click', () => addTag(tag));
+                    tagsSuggestions.appendChild(tagElement);
+                }
+            });
+        } catch (error) {
+            tagsSuggestions.innerHTML = '<div class="list-group-item text-danger">Error loading tags</div>';
+        }
+    });
+
+    function addTag(tag) {
+        if (selectedTags.length >= MAX_TAGS) {
+            tagError.textContent = `Maximum ${MAX_TAGS} tags allowed`;
+            return;
+        }
+
+        selectedTags.push(tag);
+        updateSelectedTags();
+        tagError.textContent = '';
+        tagsInput.value = '';
+        tagsSuggestions.innerHTML = '';
+    }
+
+    function removeTag(wikidataId) {
+        selectedTags = selectedTags.filter(tag => tag.wikidata_id !== wikidataId);
+        updateSelectedTags();
+        tagError.textContent = '';
+    }
+
+    function updateSelectedTags() {
+        selectedTagsField.value = JSON.stringify(selectedTags);
+        
+        selectedTagsContainer.innerHTML = selectedTags.map(tag => `
+            <span class="badge bg-primary me-2 mb-2 p-2">
+                ${tag.label}
+                <button type="button" class="btn-close btn-close-white ms-2" 
+                        onclick="removeTag('${tag.wikidata_id}')" 
+                        style="font-size: 0.5em;">
+                </button>
+            </span>
+        `).join('');
+
+        if (selectedTags.length >= MAX_TAGS) {
+            tagsInput.disabled = true;
+            tagsInput.placeholder = 'Maximum tags reached';
+        } else {
+            tagsInput.disabled = false;
+            tagsInput.placeholder = 'Search for tags';
+        }
+    }
+
+    // Add form validation function
+    function validateForm() {
+        if (selectedTags.length === 0) {
+            tagError.textContent = 'Please add at least one tag';
+            return false;
+        }
+        return true;
+    }
+</script>
+
+<style>
+    select.form-control {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1em;
+        padding-right: 2.5rem;
+    }
+
+    select.form-control::-ms-expand {
+        display: none;
+    }
+
+    #tags-suggestions {
+        max-height: 200px;
+        overflow-y: auto;
+        position: absolute;
+        width: 100%;
+        z-index: 1000;
+    }
+
+    .list-group-item {
+        cursor: pointer;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %} 

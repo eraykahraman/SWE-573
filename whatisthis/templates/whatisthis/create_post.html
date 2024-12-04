@@ -18,7 +18,7 @@
                 </div>
             {% endif %}
             
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
                 {% csrf_token %}
                 {# Display name, description, and image fields #}
                 {{ form.name|as_crispy_field }}
@@ -69,7 +69,7 @@
                 {{ form.color|as_crispy_field }}
 
                 <div class="form-group">
-                    <label for="tags-input">Tags (Search and Select)</label>
+                    <label for="tags-input">Tags (Search and Select) <span class="text-danger">*</span></label>
                     <input type="text" id="tags-input" class="form-control" placeholder="Search for tags">
                     <div id="tags-suggestions" class="list-group mt-2"></div>
                     <div id="selected-tags-container" class="mt-2"></div>
@@ -172,13 +172,14 @@
         }
     }
 
-    // Form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
+    // Add form validation function
+    function validateForm() {
         if (selectedTags.length === 0) {
-            e.preventDefault();
             tagError.textContent = 'Please add at least one tag';
+            return false;
         }
-    });
+        return true;
+    }
 </script>
 
 <style>

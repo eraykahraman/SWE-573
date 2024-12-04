@@ -1,6 +1,32 @@
 {% extends 'whatisthis/base.html' %}
 
 {% block content %}
+    <style>
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-open {
+            background-color: #fff3cd;  /* Light yellow background */
+            color: #856404;  /* Dark yellow text */
+            border: 1px solid #ffeeba;
+        }
+
+        .status-solved {
+            background-color: #d4edda;  /* Light green background */
+            color: #155724;  /* Dark green text */
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+
     <div class="container">
         <div class="row">
             <div class="col-12 mb-4">
@@ -20,6 +46,9 @@
                             {% for post in user_posts %}
                                 <div class="card mb-3">
                                     <div class="card-body">
+                                        <div class="status-badge {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
+                                            {{ post.status|title }}
+                                        </div>
                                         <h5 class="card-title">{{ post.name }}</h5>
                                         <p class="card-text">{{ post.description }}</p>
                                         {% if post.image %}
@@ -67,6 +96,9 @@
                                     <div class="col-md-6 mb-4">
                                         <div class="card h-100">
                                             <div class="card-body">
+                                                <div class="status-badge {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
+                                                    {{ post.status|title }}
+                                                </div>
                                                 <h5 class="card-title">{{ post.name }}</h5>
                                                 <p class="card-text">{{ post.description }}</p>
                                                 {% if post.image %}

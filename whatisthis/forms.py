@@ -2,13 +2,22 @@ from django import forms
 from .models import Post, Tag, Comment, Profile
 
 class PostForm(forms.ModelForm):
+    # Define choices for dimensions (1-1000 cm)
+    DIMENSION_CHOICES = [(i, f"{i} cm") for i in range(1, 1001)]
+
+    size_x = forms.ChoiceField(choices=DIMENSION_CHOICES, required=False, label="Length")
+    size_y = forms.ChoiceField(choices=DIMENSION_CHOICES, required=False, label="Width")
+    size_z = forms.ChoiceField(choices=DIMENSION_CHOICES, required=False, label="Height")
+
     class Meta:
         model = Post
-        fields = ['name', 'description', 'image', 'material', 'size', 'shape', 
-                 'text_and_language', 'found_location', 'color']
+        # Reorder fields to show dimensions after image
+        fields = ['name', 'description', 'image', 
+                 'size_x', 'size_y', 'size_z',
+                 'material', 'shape', 'text_and_language', 
+                 'found_location', 'color']
         exclude = ['tags']
         
-        # Add error messages for required fields
         error_messages = {
             'name': {
                 'required': "Please enter an object name.",
@@ -25,6 +34,11 @@ class PostForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Optionally add a field group header
+        self.fields['size_x'].group_header = "Object Dimensions"
 
 class CommentForm(forms.ModelForm):
     class Meta:

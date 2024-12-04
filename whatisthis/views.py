@@ -9,6 +9,7 @@ from .models import Tag,Comment
 import json
 from django.contrib import messages
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 
 # Home view: Display all posts
 def home(request):
@@ -159,4 +160,19 @@ def add_comment(request, post_id):
         else:
             messages.error(request, 'Error adding comment.')
     return redirect('home')
+
+@login_required
+@require_POST
+def toggle_post_status(request, post_id):
+    try:
+        post = Post.objects.get(id=post_id)
+        # Check if the user is the post owner
+        if request.user == post.author:
+            # Toggle the status
+            post.status = 'solved' if post.status == 'open' else 'open'
+            post.save()
+            return JsonResponse({'status': post.status})
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    except Post.DoesNotExist:
+        return JsonResponse({'error': 'Post not found'}, status=404)
 

@@ -12,6 +12,10 @@ class Tag(models.Model):
         return self.label or self.wikidata_id
 
 class Post(models.Model):
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('solved', 'Solved'),
+    )
     name = models.CharField(max_length=200, verbose_name="Object Name")
     description = models.TextField(verbose_name="Description")
     image = models.ImageField(upload_to='post_images/', null=True, blank=False)
@@ -24,6 +28,12 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
+    status = models.CharField(
+        max_length=10, 
+        choices=STATUS_CHOICES, 
+        default='open',
+        editable=False
+    )
 
     def __str__(self):
         return self.name

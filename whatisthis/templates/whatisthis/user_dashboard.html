@@ -24,6 +24,15 @@
             })
             .catch(error => console.error('Error:', error));
         }
+
+        function toggleYourPosts() {
+            const yourPostsSection = document.getElementById('your-posts-section');
+            if (yourPostsSection.style.display === 'none') {
+                yourPostsSection.style.display = 'block';
+            } else {
+                yourPostsSection.style.display = 'none';
+            }
+        }
     </script>
 
     <style>
@@ -60,6 +69,41 @@
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .edit-button {
+            background-color: #f8f9fa;
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-left: 10px;
+            display: inline-block;
+        }
+
+        .edit-button:hover {
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+        }
+
+        .status-and-edit {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
     </style>
 
     <div class="container">
@@ -67,10 +111,11 @@
             <div class="col-12 mb-4">
                 <h1>Welcome, {{ user.username }}!</h1>
                 <a href="{% url 'create_post' %}" class="btn btn-primary">Create New Post</a>
+                <button onclick="toggleYourPosts()" class="btn btn-secondary">Your Posts</button>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row" id="your-posts-section" style="display: none;">
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header">
@@ -81,8 +126,14 @@
                             {% for post in user_posts %}
                                 <div class="card mb-3">
                                     <div class="card-body">
-                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" {% if user == post.author %} onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status"{% endif %}>
-                                            {{ post.status|title }}
+                                        <div class="status-and-edit">
+                                            <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" 
+                                                onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status">
+                                                {{ post.status|title }}
+                                            </div>
+                                            <a href="{% url 'edit_post' post.id %}" class="edit-button">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
                                         </div>
                                         <h5 class="card-title">{{ post.name }}</h5>
                                         <p class="card-text">{{ post.description }}</p>
@@ -118,75 +169,71 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="h5 mb-0">Recent Posts</h2>
-                    </div>
-                    <div class="card-body">
-                        {% if posts %}
-                            <div class="row">
-                                {% for post in posts %}
-                                    <div class="col-md-6 mb-4">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}" {% if user == post.author %} onclick="toggleStatus({{ post.id }});" style="cursor: pointer;" title="Click to toggle status"{% endif %}>
-                                                    {{ post.status|title }}
-                                                </div>
-                                                <h5 class="card-title">{{ post.name }}</h5>
-                                                <p class="card-text">{{ post.description }}</p>
-                                                {% if post.image %}
-                                                    <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
-                                                {% endif %}
-                                                <div class="post-details">
-                                                    <p><strong>Material:</strong> {{ post.material }}</p>
-                                                    <p><strong>Size:</strong> {{ post.size }}</p>
-                                                    <p><strong>Shape:</strong> {{ post.shape }}</p>
-                                                    <p><strong>Text & Language:</strong> {{ post.text_and_language }}</p>
-                                                    <p><strong>Found Location:</strong> {{ post.found_location }}</p>
-                                                    <p><strong>Color:</strong> {{ post.color }}</p>
-                                                    <p><strong>Tags:</strong> 
-                                                    {% with post_tags=post.tags.all %}
-                                                        {% if post_tags %}
-                                                            {% for tag in post_tags %}
-                                                                <span class="badge bg-secondary">{{ tag }}</span>
-                                                            {% endfor %}
-                                                        {% else %}
-                                                            <span class="text-muted">No tags</span>
-                                                        {% endif %}
-                                                    {% endwith %}
-                                                    </p>
-                                                </div>
-                                                <p class="card-text"><small class="text-muted">Posted by {{ post.author.username }}</small></p>
-                                                
-                                                <!-- Comments Section -->
-                                                <div class="comments-section mt-3">
-                                                    <h6>Comments</h6>
-                                                    {% for comment in post.comment_list %}
-                                                        <div class="comment mb-2">
-                                                            <small class="text-muted">{{ comment.author.username }} - {{ comment.created_at|date:"M d, Y" }}</small>
-                                                            <p class="mb-1">{{ comment.content }}</p>
-                                                        </div>
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="h5 mb-3">Recent Posts</h2>
+                {% if posts %}
+                    <div class="row">
+                        {% for post in posts %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
+                                            {{ post.status|title }}
+                                        </div>
+                                        <h5 class="card-title">{{ post.name }}</h5>
+                                        <p class="card-text">{{ post.description }}</p>
+                                        {% if post.image %}
+                                            <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
+                                        {% endif %}
+                                        <div class="post-details">
+                                            <p><strong>Material:</strong> {{ post.material }}</p>
+                                            <p><strong>Size:</strong> {{ post.size }}</p>
+                                            <p><strong>Shape:</strong> {{ post.shape }}</p>
+                                            <p><strong>Text & Language:</strong> {{ post.text_and_language }}</p>
+                                            <p><strong>Found Location:</strong> {{ post.found_location }}</p>
+                                            <p><strong>Color:</strong> {{ post.color }}</p>
+                                            <p><strong>Tags:</strong> 
+                                            {% with post_tags=post.tags.all %}
+                                                {% if post_tags %}
+                                                    {% for tag in post_tags %}
+                                                        <span class="badge bg-secondary">{{ tag }}</span>
                                                     {% endfor %}
-                                                    
-                                                    <!-- Comment Form -->
-                                                    <form method="post" action="{% url 'add_comment' post.id %}" class="mt-3">
-                                                        {% csrf_token %}
-                                                        {{ comment_form.as_p }}
-                                                        <button type="submit" class="btn btn-sm btn-primary">Add Comment</button>
-                                                    </form>
+                                                {% else %}
+                                                    <span class="text-muted">No tags</span>
+                                                {% endif %}
+                                            {% endwith %}
+                                            </p>
+                                        </div>
+                                        <p class="card-text"><small class="text-muted">Posted by {{ post.author.username }}</small></p>
+                                        
+                                        <!-- Comments Section -->
+                                        <div class="comments-section mt-3">
+                                            <h6>Comments</h6>
+                                            {% for comment in post.comment_list %}
+                                                <div class="comment mb-2">
+                                                    <small class="text-muted">{{ comment.author.username }} - {{ comment.created_at|date:"M d, Y" }}</small>
+                                                    <p class="mb-1">{{ comment.content }}</p>
                                                 </div>
-                                            </div>
+                                            {% endfor %}
+                                            
+                                            <!-- Comment Form -->
+                                            <form method="post" action="{% url 'add_comment' post.id %}" class="mt-3">
+                                                {% csrf_token %}
+                                                {{ comment_form.as_p }}
+                                                <button type="submit" class="btn btn-sm btn-primary">Add Comment</button>
+                                            </form>
                                         </div>
                                     </div>
-                                {% endfor %}
+                                </div>
                             </div>
-                        {% else %}
-                            <p class="text-muted text-center">No posts available yet.</p>
-                        {% endif %}
+                        {% endfor %}
                     </div>
-                </div>
+                {% else %}
+                    <p class="text-muted text-center">No posts available yet.</p>
+                {% endif %}
             </div>
         </div>
     </div>

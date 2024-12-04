@@ -85,6 +85,13 @@ def create_post(request):
 def create_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
+        tags_data = request.POST.get('selected_tags')
+        
+        # Check if tags are provided
+        if not tags_data:
+            messages.error(request, 'Please add at least one tag to your post.')
+            return render(request, 'whatisthis/create_post.html', {'form': form})
+
         if form.is_valid():
             if 'image' not in request.FILES:
                 messages.error(request, 'Please upload an image for your post.')
@@ -94,21 +101,26 @@ def create_post(request):
             post.author = request.user
             post.save()
             
-            # Handle tags
-            tags_data = request.POST.get('selected_tags')
-            if tags_data:
+            try:
+                # Add tags
                 tags = json.loads(tags_data)
+                if not tags:  # Additional server-side validation
+                    raise ValueError("No tags provided")
+                    
                 for tag_data in tags:
                     tag, created = Tag.objects.get_or_create(
                         wikidata_id=tag_data['wikidata_id'],
                         defaults={'label': tag_data['label']}
                     )
                     post.tags.add(tag)
-            
-            messages.success(request, 'Post created successfully!')
-            return redirect('home')
+                
+                messages.success(request, 'Post created successfully!')
+                return redirect('home')
+            except (json.JSONDecodeError, ValueError) as e:
+                post.delete()  # Delete the post if tag creation fails
+                messages.error(request, 'Please add at least one tag to your post.')
+                return render(request, 'whatisthis/create_post.html', {'form': form})
         else:
-            # Form is invalid - it will be re-rendered with errors
             return render(request, 'whatisthis/create_post.html', {'form': form})
     else:
         form = PostForm()
@@ -175,4 +187,67 @@ def toggle_post_status(request, post_id):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
     except Post.DoesNotExist:
         return JsonResponse({'error': 'Post not found'}, status=404)
+
+@login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    # Check if the user is the author of the post
+    if request.user != post.author:
+        return HttpResponseForbidden("You don't have permission to edit this post")
+        
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        tags_data = request.POST.get('selected_tags')
+        
+        # Check if tags are provided
+        if not tags_data:
+            messages.error(request, 'Please add at least one tag to your post.')
+            return render(request, 'whatisthis/edit_post.html', {
+                'form': form,
+                'post': post,
+                'existing_tags': json.dumps([])
+            })
+
+        if form.is_valid():
+            post = form.save()
+            
+            try:
+                # Clear existing tags
+                post.tags.clear()
+                # Add new tags
+                tags = json.loads(tags_data)
+                if not tags:  # Additional server-side validation
+                    raise ValueError("No tags provided")
+                    
+                for tag_data in tags:
+                    tag, created = Tag.objects.get_or_create(
+                        wikidata_id=tag_data['wikidata_id'],
+                        defaults={'label': tag_data['label']}
+                    )
+                    post.tags.add(tag)
+                
+                messages.success(request, 'Post updated successfully!')
+                return redirect('home')
+            except (json.JSONDecodeError, ValueError) as e:
+                messages.error(request, 'Please add at least one tag to your post.')
+                return render(request, 'whatisthis/edit_post.html', {
+                    'form': form,
+                    'post': post,
+                    'existing_tags': json.dumps([])
+                })
+        else:
+            messages.error(request, 'There was an error updating your post.')
+    else:
+        form = PostForm(instance=post)
+    
+    # Convert existing tags to JSON format for the template
+    existing_tags = [{'wikidata_id': tag.wikidata_id, 'label': tag.label} 
+                    for tag in post.tags.all()]
+    
+    return render(request, 'whatisthis/edit_post.html', {
+        'form': form,
+        'post': post,
+        'existing_tags': json.dumps(existing_tags)
+    })
 

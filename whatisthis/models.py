@@ -26,7 +26,33 @@ class Post(models.Model):
     shape = models.CharField(max_length=100, blank=True, null=True, verbose_name="Shape")
     text_and_language = models.CharField(max_length=200, blank=True, null=True, verbose_name="Text and Language")
     found_location = models.CharField(max_length=200, blank=True, null=True, verbose_name="Found Location")
-    color = models.CharField(max_length=100, blank=True, null=True, verbose_name="Color")
+    COLOR_CHOICES = [
+        ('none', 'None'),  # Added default None option
+        ('black', 'Black'),
+        ('white', 'White'),
+        ('gray', 'Gray'),
+        ('red', 'Red'),
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('yellow', 'Yellow'),
+        ('purple', 'Purple'),
+        ('orange', 'Orange'),
+        ('brown', 'Brown'),
+        ('pink', 'Pink'),
+        ('gold', 'Gold'),
+        ('silver', 'Silver'),
+        ('bronze', 'Bronze'),
+        ('multicolor', 'Multicolor'),
+        ('other', 'Other'),
+    ]
+    color = models.CharField(
+        max_length=20, 
+        choices=COLOR_CHOICES,
+        default='none',  # Set default value
+        blank=True, 
+        null=True, 
+        verbose_name="Color"
+    )
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)

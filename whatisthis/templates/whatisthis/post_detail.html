@@ -112,7 +112,7 @@
                     
                     <!-- Comment Form -->
                     {% if user.is_authenticated %}
-                        <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
+                        <form id="commentForm" class="mb-4">
                             {% csrf_token %}
                             <div class="form-group">
                                 <textarea name="content" class="form-control" rows="3" 
@@ -163,7 +163,27 @@
                             <!-- Display Replies -->
                             <div class="replies">
                                 {% for reply in comment.replies.all %}
-                                    {% include 'whatisthis/reply.html' with reply=reply %}
+                                    <div class="reply" id="reply-{{ reply.id }}">
+                                        <div class="reply-header">
+                                            <strong>{{ reply.author.username }}</strong>
+                                            <small class="text-muted">{{ reply.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                        <div class="reply-content">
+                                            {{ reply.content }}
+                                        </div>
+                                        <div class="reply-actions">
+                                            <button onclick="handleReplyVote({{ reply.id }}, 'upvote')" 
+                                                    class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-thumbs-up"></i> Like 
+                                                <span class="like-count-{{ reply.id }}">{{ reply.total_likes }}</span>
+                                            </button>
+                                            <button onclick="handleReplyVote({{ reply.id }}, 'downvote')" 
+                                                    class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-thumbs-down"></i> Dislike 
+                                                <span class="dislike-count-{{ reply.id }}">{{ reply.total_dislikes }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 {% endfor %}
                             </div>
                         </div>
@@ -436,6 +456,98 @@
     function toggleReplyForm(replyId) {
         const form = document.getElementById(`reply-form-${replyId}`);
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Add new comment submission handler
+    document.getElementById('commentForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = this.querySelector('textarea[name="content"]').value;
+        
+        fetch(`{% url 'add_comment' post.id %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create new comment HTML
+                const commentHtml = `
+                    <div class="comment" id="comment-${data.comment.id}">
+                        <div class="comment-header">
+                            <strong>${data.comment.author}</strong>
+                            <small class="text-muted">${data.comment.created_at}</small>
+                        </div>
+                        <div class="comment-content">
+                            ${data.comment.content}
+                        </div>
+                        <div class="comment-actions">
+                            <button onclick="handleVote(${data.comment.id}, 'upvote')" 
+                                    class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-thumbs-up"></i> Like 
+                                <span class="like-count-${data.comment.id}">0</span>
+                            </button>
+                            <button onclick="handleVote(${data.comment.id}, 'downvote')" 
+                                    class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-thumbs-down"></i> Dislike 
+                                <span class="dislike-count-${data.comment.id}">0</span>
+                            </button>
+                            <button onclick="toggleReplyForm(${data.comment.id})" 
+                                    class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-reply"></i> Reply
+                            </button>
+                        </div>
+                        <form method="post" action="{% url 'add_reply' 0 %}" class="reply-form" 
+                              id="reply-form-${data.comment.id}" style="display: none;">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <textarea name="content" class="form-control" rows="2" 
+                                          placeholder="Write your reply here..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Add Reply</button>
+                        </form>
+                        <div class="replies"></div>
+                    </div>
+                `;
+                
+                // Find the correct insertion point (after the comment form)
+                const commentForm = document.getElementById('commentForm');
+                const noCommentsText = document.querySelector('.text-muted');
+                
+                if (noCommentsText && noCommentsText.textContent.includes('No comments yet')) {
+                    noCommentsText.remove();
+                }
+                
+                commentForm.insertAdjacentHTML('afterend', commentHtml);
+                
+                // Clear the form
+                this.querySelector('textarea').value = '';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    function handleReplyVote(replyId, voteType) {
+        const url = `/reply/${replyId}/${voteType}/`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update vote counts
+            document.querySelector(`.like-count-${replyId}`).textContent = data.likes;
+            document.querySelector(`.dislike-count-${replyId}`).textContent = data.dislikes;
+        })
+        .catch(error => console.error('Error:', error));
     }
 </script>
 {% endblock %} 

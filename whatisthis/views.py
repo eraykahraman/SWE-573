@@ -9,15 +9,78 @@ from django.views.decorators.http import require_POST
 from .forms import PostForm, CommentForm, ProfileUpdateForm
 import requests
 import json
+from django.db.models import Q
 
 # Home view: Display all posts
 def home(request):
-    # Get all posts for everyone, ordered by newest first
-    posts = Post.objects.all().order_by('-created_at')
+    # Start with all posts
+    posts = Post.objects.all()
+    
+    # Define size ranges
+    size_ranges = {
+        'Tiny': (0, 5),
+        'Small': (5, 10),
+        'Medium': (10, 30),
+        'Large': (30, 100),
+        'Very Large': (100, 999999)
+    }
+    
+    # Debug print
+    print("Search parameters:", request.GET)
+    
+    # Apply filters for each field if provided
+    if request.GET.get('name'):
+        posts = posts.filter(name__icontains=request.GET['name'])
+        print(f"After name filter: {posts.count()} posts")
+
+    if request.GET.get('material') and request.GET.get('material') != '':
+        posts = posts.filter(material__iexact=request.GET['material'])
+        print(f"After material filter: {posts.count()} posts")
+        
+    # Handle all size dimensions
+    if request.GET.get('size_x') and request.GET.get('size_x') != '':
+        size_range = size_ranges.get(request.GET['size_x'])
+        if size_range:
+            posts = posts.filter(size_x__gte=size_range[0], size_x__lt=size_range[1])
+            print(f"After length filter: {posts.count()} posts")
+            
+    if request.GET.get('size_y') and request.GET.get('size_y') != '':
+        size_range = size_ranges.get(request.GET['size_y'])
+        if size_range:
+            posts = posts.filter(size_y__gte=size_range[0], size_y__lt=size_range[1])
+            print(f"After width filter: {posts.count()} posts")
+            
+    # Fix: Change 'height' to 'size_z' in the GET parameter check
+    if request.GET.get('size_z') and request.GET.get('size_z') != '':
+        size_range = size_ranges.get(request.GET['size_z'])
+        if size_range:
+            posts = posts.filter(size_z__gte=size_range[0], size_z__lt=size_range[1])
+            print(f"After height filter: {posts.count()} posts")
+            
+    if request.GET.get('shape') and request.GET.get('shape') != '':
+        posts = posts.filter(shape__iexact=request.GET['shape'])
+        print(f"After shape filter: {posts.count()} posts")
+
+    if request.GET.get('text_and_language'):
+        posts = posts.filter(text_and_language__icontains=request.GET['text_and_language'])
+        print(f"After text filter: {posts.count()} posts")
+
+    if request.GET.get('found_location'):
+        posts = posts.filter(found_location__icontains=request.GET['found_location'])
+        print(f"After location filter: {posts.count()} posts")
+
+    if request.GET.get('color') and request.GET.get('color') != '':
+        posts = posts.filter(color__iexact=request.GET['color'])
+        print(f"After color filter: {posts.count()} posts")
+    
+    # Print final query for debugging
+    print("Final SQL:", posts.query)
+    
+    # Order posts by creation date
+    posts = posts.order_by('-created_at')
     
     if request.user.is_authenticated:
         user_posts = Post.objects.filter(author=request.user)
-        # Get comments for each post
         for post in posts:
             post.comment_list = Comment.objects.filter(post=post).order_by('-created_at')
         return render(request, 'whatisthis/user_dashboard.html', {
@@ -26,7 +89,6 @@ def home(request):
             'user_posts': user_posts,
         })
     else:
-        # Get comments for each post for non-authenticated users too
         for post in posts:
             post.comment_list = Comment.objects.filter(post=post).order_by('-created_at')
         return render(request, 'whatisthis/home.html', {

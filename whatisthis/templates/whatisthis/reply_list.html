@@ -12,12 +12,12 @@
                 <div class="reply-actions">
                     <button onclick="handleVote({{ reply.id }}, 'upvote', true)" 
                             class="btn btn-sm btn-outline-success {% if user in reply.likes.all %}active{% endif %}">
-                        <i class="fas fa-thumbs-up"></i> 
+                        <i class="fas fa-thumbs-up"></i> Like
                         <span class="like-count-{{ reply.id }}">{{ reply.total_likes }}</span>
                     </button>
                     <button onclick="handleVote({{ reply.id }}, 'downvote', true)" 
                             class="btn btn-sm btn-outline-danger {% if user in reply.dislikes.all %}active{% endif %}">
-                        <i class="fas fa-thumbs-down"></i>
+                        <i class="fas fa-thumbs-down"></i> Dislike
                         <span class="dislike-count-{{ reply.id }}">{{ reply.total_dislikes }}</span>
                     </button>
                     <button onclick="toggleReplyForm({{ reply.id }})" 
@@ -71,12 +71,16 @@
         border-radius: 0.5rem;
         padding: 1rem;
         margin-bottom: 0.5rem;
+        position: relative;
     }
 
     .reply-actions {
         margin-top: 0.5rem;
         display: flex;
         gap: 0.5rem;
+        position: absolute;
+        bottom: 0.5rem;
+        right: 0.5rem;
     }
 
     .reply-form-container {

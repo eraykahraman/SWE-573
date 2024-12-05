@@ -62,8 +62,21 @@
                     <input type="text" id="other-material" name="other_material" class="form-control" placeholder="Specify other material">
                 </div>
 
+                {# Display shape field as a dropdown #}
+                <div class="form-group mt-3">
+                    <label for="shape">Shape</label>
+                    <select id="shape" name="shape" class="form-control">
+                        <option value="none">None</option>
+                        <option value="cylindrical">Cylindrical</option>
+                        <option value="rectangular">Rectangular</option>
+                        <option value="spherical">Spherical</option>
+                        <option value="cubic">Cubic</option>
+                        <option value="triangular">Triangular</option>
+                        <option value="irregular">Irregular</option>
+                    </select>
+                </div>
+
                 {# Display remaining fields #}
-                {{ form.shape|as_crispy_field }}
                 {{ form.text_and_language|as_crispy_field }}
                 {{ form.found_location|as_crispy_field }}
                 {{ form.color|as_crispy_field }}

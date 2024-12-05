@@ -132,7 +132,11 @@
                 if (!selectedTags.find(t => t.wikidata_id === tag.wikidata_id)) {
                     const tagElement = document.createElement('div');
                     tagElement.classList.add('list-group-item', 'list-group-item-action');
-                    tagElement.textContent = tag.label;
+                    // Add label and description
+                    tagElement.innerHTML = `
+                        <div><strong>${tag.label}</strong></div>
+                        <small class="text-muted">${tag.description || 'No description available'}</small>
+                    `;
                     tagElement.addEventListener('click', () => {
                         addTag(tag);
                     });

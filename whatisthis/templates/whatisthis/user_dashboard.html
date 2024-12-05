@@ -3,169 +3,372 @@
 {% block content %}
     {% csrf_token %}
 
-    <script>
-        function toggleStatus(postId) {
-            fetch(`/toggle-status/${postId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status) {
-                    document.querySelectorAll(`.status-badge-${postId}`).forEach(badge => {
-                        badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
-                        badge.classList.remove('status-open', 'status-solved');
-                        badge.classList.add(`status-${data.status}`);
-                    });
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function toggleYourPosts() {
-            const yourPostsSection = document.getElementById('your-posts-section');
-            if (yourPostsSection.style.display === 'none') {
-                yourPostsSection.style.display = 'block';
-            } else {
-                yourPostsSection.style.display = 'none';
-            }
-        }
-
-        function handleVote(commentId, voteType) {
-            const url = voteType === 'upvote' 
-                ? `/comment/${commentId}/upvote/`
-                : `/comment/${commentId}/downvote/`;
-
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Update the vote counts
-                const commentElement = document.querySelector(`#comment-${commentId}`);
-                commentElement.querySelector('.like-count').textContent = data.likes;
-                commentElement.querySelector('.dislike-count').textContent = data.dislikes;
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
-
-    <style>
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .status-open {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-
-        .status-solved {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status-badge[onclick] {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .status-badge[onclick]:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .edit-button {
-            background-color: #f8f9fa;
-            font-size: 0.9rem;
-            padding: 6px 12px;
-            color: #6c757d;
-            border: 1px solid #6c757d;
-            border-radius: 4px;
-            text-decoration: none;
-            transition: all 0.2s;
-            margin-left: 10px;
-            display: inline-block;
-        }
-
-        .edit-button:hover {
-            background-color: #6c757d;
-            color: white;
-            text-decoration: none;
-        }
-
-        .status-and-edit {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .comment-actions {
-            margin-top: 5px;
-            text-align: right;
-        }
-        
-        .comment-actions .btn {
-            padding: 2px 8px;
-            font-size: 0.8rem;
-        }
-        
-        .comment-actions .btn i {
-            margin-right: 3px;
-        }
-
-        .comment {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .comment-header {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
-        }
-
-        .comment-content {
-            margin: 10px 0;
-        }
-
-        .comment-actions {
-            margin-top: 10px;
-            text-align: right;
-            padding-top: 8px;
-            border-top: 1px solid #eee;
-        }
-    </style>
-
     <div class="container">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <button type="button" class="btn btn-primary" onclick="toggleSearch()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <form method="get" action="{% url 'home' %}" class="mt-3" id="searchForm" style="display: none;">
+                    <div class="card p-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Search by name..." value="{{ request.GET.name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="material" class="form-label">Material</label>
+                                <select name="material" class="form-control">
+                                    <option value="">Select Material</option>
+                                    <option value="Metal" {% if request.GET.material == 'Metal' %}selected{% endif %}>Metal</option>
+                                    <option value="Wood" {% if request.GET.material == 'Wood' %}selected{% endif %}>Wood</option>
+                                    <option value="Plastic" {% if request.GET.material == 'Plastic' %}selected{% endif %}>Plastic</option>
+                                    <option value="Glass" {% if request.GET.material == 'Glass' %}selected{% endif %}>Glass</option>
+                                    <option value="Ceramic" {% if request.GET.material == 'Ceramic' %}selected{% endif %}>Ceramic</option>
+                                    <option value="Stone" {% if request.GET.material == 'Stone' %}selected{% endif %}>Stone</option>
+                                    <option value="Paper" {% if request.GET.material == 'Paper' %}selected{% endif %}>Paper</option>
+                                    <option value="Fabric" {% if request.GET.material == 'Fabric' %}selected{% endif %}>Fabric</option>
+                                    <option value="Other" {% if request.GET.material == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="size_x" class="form-label">Length</label>
+                                <select name="size_x" class="form-control">
+                                    <option value="">Select Length</option>
+                                    <option value="Tiny" {% if request.GET.size_x == 'Tiny' %}selected{% endif %}>Tiny (< 5cm)</option>
+                                    <option value="Small" {% if request.GET.size_x == 'Small' %}selected{% endif %}>Small (5-10cm)</option>
+                                    <option value="Medium" {% if request.GET.size_x == 'Medium' %}selected{% endif %}>Medium (10-30cm)</option>
+                                    <option value="Large" {% if request.GET.size_x == 'Large' %}selected{% endif %}>Large (30-100cm)</option>
+                                    <option value="Very Large" {% if request.GET.size_x == 'Very Large' %}selected{% endif %}>Very Large (> 100cm)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="size_y" class="form-label">Width</label>
+                                <select name="size_y" class="form-control">
+                                    <option value="">Select Width</option>
+                                    <option value="Tiny" {% if request.GET.size_y == 'Tiny' %}selected{% endif %}>Tiny (< 5cm)</option>
+                                    <option value="Small" {% if request.GET.size_y == 'Small' %}selected{% endif %}>Small (5-10cm)</option>
+                                    <option value="Medium" {% if request.GET.size_y == 'Medium' %}selected{% endif %}>Medium (10-30cm)</option>
+                                    <option value="Large" {% if request.GET.size_y == 'Large' %}selected{% endif %}>Large (30-100cm)</option>
+                                    <option value="Very Large" {% if request.GET.size_y == 'Very Large' %}selected{% endif %}>Very Large (> 100cm)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="size_z" class="form-label">Height</label>
+                                <select name="size_z" class="form-control">
+                                    <option value="">Select Height</option>
+                                    <option value="Tiny" {% if request.GET.size_z == 'Tiny' %}selected{% endif %}>Tiny (< 5cm)</option>
+                                    <option value="Small" {% if request.GET.size_z == 'Small' %}selected{% endif %}>Small (5-10cm)</option>
+                                    <option value="Medium" {% if request.GET.size_z == 'Medium' %}selected{% endif %}>Medium (10-30cm)</option>
+                                    <option value="Large" {% if request.GET.size_z == 'Large' %}selected{% endif %}>Large (30-100cm)</option>
+                                    <option value="Very Large" {% if request.GET.size_z == 'Very Large' %}selected{% endif %}>Very Large (> 100cm)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="shape" class="form-label">Shape</label>
+                                <select name="shape" class="form-control">
+                                    <option value="">Select Shape</option>
+                                    <option value="Round" {% if request.GET.shape == 'Round' %}selected{% endif %}>Round</option>
+                                    <option value="Square" {% if request.GET.shape == 'Square' %}selected{% endif %}>Square</option>
+                                    <option value="Rectangular" {% if request.GET.shape == 'Rectangular' %}selected{% endif %}>Rectangular</option>
+                                    <option value="Oval" {% if request.GET.shape == 'Oval' %}selected{% endif %}>Oval</option>
+                                    <option value="Triangular" {% if request.GET.shape == 'Triangular' %}selected{% endif %}>Triangular</option>
+                                    <option value="Other" {% if request.GET.shape == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="text_and_language" class="form-label">Text & Language</label>
+                                <input type="text" name="text_and_language" class="form-control" placeholder="Search by text..." value="{{ request.GET.text_and_language }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="found_location" class="form-label">Found Location</label>
+                                <input type="text" name="found_location" class="form-control" placeholder="Search by location..." value="{{ request.GET.found_location }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label">Color</label>
+                                <select name="color" class="form-control">
+                                    <option value="">None</option>
+                                    <option value="Black" {% if request.GET.color == 'Black' %}selected{% endif %}>Black</option>
+                                    <option value="White" {% if request.GET.color == 'White' %}selected{% endif %}>White</option>
+                                    <option value="Gray" {% if request.GET.color == 'Gray' %}selected{% endif %}>Gray</option>
+                                    <option value="Red" {% if request.GET.color == 'Red' %}selected{% endif %}>Red</option>
+                                    <option value="Blue" {% if request.GET.color == 'Blue' %}selected{% endif %}>Blue</option>
+                                    <option value="Green" {% if request.GET.color == 'Green' %}selected{% endif %}>Green</option>
+                                    <option value="Yellow" {% if request.GET.color == 'Yellow' %}selected{% endif %}>Yellow</option>
+                                    <option value="Purple" {% if request.GET.color == 'Purple' %}selected{% endif %}>Purple</option>
+                                    <option value="Orange" {% if request.GET.color == 'Orange' %}selected{% endif %}>Orange</option>
+                                    <option value="Brown" {% if request.GET.color == 'Brown' %}selected{% endif %}>Brown</option>
+                                    <option value="Pink" {% if request.GET.color == 'Pink' %}selected{% endif %}>Pink</option>
+                                    <option value="Gold" {% if request.GET.color == 'Gold' %}selected{% endif %}>Gold</option>
+                                    <option value="Silver" {% if request.GET.color == 'Silver' %}selected{% endif %}>Silver</option>
+                                    <option value="Bronze" {% if request.GET.color == 'Bronze' %}selected{% endif %}>Bronze</option>
+                                    <option value="Multicolor" {% if request.GET.color == 'Multicolor' %}selected{% endif %}>Multicolor</option>
+                                    <option value="Other" {% if request.GET.color == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                                <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function toggleStatus(postId) {
+                fetch(`/toggle-status/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        document.querySelectorAll(`.status-badge-${postId}`).forEach(badge => {
+                            badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                            badge.classList.remove('status-open', 'status-solved');
+                            badge.classList.add(`status-${data.status}`);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            function toggleYourPosts() {
+                const yourPostsSection = document.getElementById('your-posts-section');
+                if (yourPostsSection.style.display === 'none') {
+                    yourPostsSection.style.display = 'block';
+                } else {
+                    yourPostsSection.style.display = 'none';
+                }
+            }
+
+            function handleVote(commentId, voteType) {
+                const url = voteType === 'upvote' 
+                    ? `/comment/${commentId}/upvote/`
+                    : `/comment/${commentId}/downvote/`;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the vote counts
+                    const commentElement = document.querySelector(`#comment-${commentId}`);
+                    commentElement.querySelector('.like-count').textContent = data.likes;
+                    commentElement.querySelector('.dislike-count').textContent = data.dislikes;
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            function toggleSearch() {
+                const searchForm = document.getElementById('searchForm');
+                if (searchForm.style.display === 'none') {
+                    searchForm.style.display = 'block';
+                } else {
+                    searchForm.style.display = 'none';
+                }
+            }
+
+            function clearSearch() {
+                // Clear text inputs
+                const textInputs = document.querySelectorAll('#searchForm input[type="text"]');
+                textInputs.forEach(input => input.value = '');
+                
+                // Reset select dropdowns
+                const selectInputs = document.querySelectorAll('#searchForm select');
+                selectInputs.forEach(select => select.selectedIndex = 0);
+                
+                // Submit the form
+                document.getElementById('searchForm').submit();
+            }
+
+            function showTagDescription(label, wikidataId) {
+                fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&format=json&origin=*`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const entity = data.entities[wikidataId];
+                        const description = entity.descriptions?.en?.value || 'No description available';
+
+                        // Create or get the modal
+                        let modal = document.getElementById('tagDescriptionModal');
+                        if (!modal) {
+                            modal = document.createElement('div');
+                            modal.id = 'tagDescriptionModal';
+                            modal.className = 'modal fade';
+                            modal.innerHTML = `
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body"></div>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(modal);
+                        }
+
+                        // Update modal content
+                        modal.querySelector('.modal-title').textContent = label;
+                        modal.querySelector('.modal-body').textContent = description;
+
+                        // Show the modal
+                        const bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching description:', error);
+                    });
+            }
+        </script>
+
+        <style>
+            .status-badge {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                display: inline-block;
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .status-open {
+                background-color: #fff3cd;
+                color: #856404;
+                border: 1px solid #ffeeba;
+            }
+
+            .status-solved {
+                background-color: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+            }
+
+            .status-badge[onclick] {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+
+            .status-badge[onclick]:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+            .post-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+
+            .edit-button {
+                background-color: #f8f9fa;
+                font-size: 0.9rem;
+                padding: 6px 12px;
+                color: #6c757d;
+                border: 1px solid #6c757d;
+                border-radius: 4px;
+                text-decoration: none;
+                transition: all 0.2s;
+                margin-left: 10px;
+                display: inline-block;
+            }
+
+            .edit-button:hover {
+                background-color: #6c757d;
+                color: white;
+                text-decoration: none;
+            }
+
+            .status-and-edit {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .comment-actions {
+                margin-top: 5px;
+                text-align: right;
+            }
+            
+            .comment-actions .btn {
+                padding: 2px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .comment-actions .btn i {
+                margin-right: 3px;
+            }
+
+            .comment {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .comment-header {
+                border-bottom: 1px solid #eee;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+            }
+
+            .comment-content {
+                margin: 10px 0;
+            }
+
+            .comment-actions {
+                margin-top: 10px;
+                text-align: right;
+                padding-top: 8px;
+                border-top: 1px solid #eee;
+            }
+
+            #searchForm {
+                transition: all 0.3s ease-in-out;
+            }
+            
+            .input-group {
+                max-width: 500px;
+            }
+
+            .card {
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .tag-badge {
+                transition: transform 0.1s ease-in-out;
+                margin-right: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .tag-badge:hover {
+                transform: scale(1.05);
+            }
+            .modal-dialog {
+                max-width: 400px;
+            }
+            .modal-body {
+                padding: 1.5rem;
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+        </style>
+
         <div class="row">
             <div class="col-12 mb-4">
                 <h1>Welcome, {{ user.username }}!</h1>
@@ -201,7 +404,11 @@
                                         {% endif %}
                                         <div class="post-details">
                                             <p><strong>Material:</strong> {{ post.material }}</p>
-                                            <p><strong>Size:</strong> {{ post.size }}</p>
+                                            <p><strong>Size:</strong> 
+                                                Length: {{ post.size_x }} cm, 
+                                                Width: {{ post.size_y }} cm, 
+                                                Height: {{ post.size_z }} cm
+                                            </p>
                                             <p><strong>Shape:</strong> {{ post.shape }}</p>
                                             <p><strong>Text & Language:</strong> {{ post.text_and_language }}</p>
                                             <p><strong>Found Location:</strong> {{ post.found_location }}</p>
@@ -210,7 +417,13 @@
                                             {% with post_tags=post.tags.all %}
                                                 {% if post_tags %}
                                                     {% for tag in post_tags %}
-                                                        <span class="badge bg-secondary">{{ tag }}</span>
+                                                        <span class="badge bg-secondary tag-badge" 
+                                                              data-bs-toggle="tooltip" 
+                                                              title="Loading description..."
+                                                              data-wikidata-id="{{ tag.wikidata_id }}"
+                                                              style="cursor: pointer;">
+                                                            {{ tag }}
+                                                        </span>
                                                     {% endfor %}
                                                 {% else %}
                                                     <span class="text-muted">No tags</span>
@@ -249,7 +462,11 @@
                                         {% endif %}
                                         <div class="post-details">
                                             <p><strong>Material:</strong> {{ post.material }}</p>
-                                            <p><strong>Size:</strong> {{ post.size }}</p>
+                                            <p><strong>Size:</strong> 
+                                                Length: {{ post.size_x }} cm, 
+                                                Width: {{ post.size_y }} cm, 
+                                                Height: {{ post.size_z }} cm
+                                            </p>
                                             <p><strong>Shape:</strong> {{ post.shape }}</p>
                                             <p><strong>Text & Language:</strong> {{ post.text_and_language }}</p>
                                             <p><strong>Found Location:</strong> {{ post.found_location }}</p>
@@ -258,7 +475,13 @@
                                             {% with post_tags=post.tags.all %}
                                                 {% if post_tags %}
                                                     {% for tag in post_tags %}
-                                                        <span class="badge bg-secondary">{{ tag }}</span>
+                                                        <span class="badge bg-secondary tag-badge" 
+                                                              data-bs-toggle="tooltip" 
+                                                              title="Loading description..."
+                                                              data-wikidata-id="{{ tag.wikidata_id }}"
+                                                              style="cursor: pointer;">
+                                                            {{ tag }}
+                                                        </span>
                                                     {% endfor %}
                                                 {% else %}
                                                     <span class="text-muted">No tags</span>
@@ -314,4 +537,28 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            const tooltipList = tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+            tooltipTriggerList.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    const wikidataId = el.getAttribute('data-wikidata-id');
+                    fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&format=json&origin=*`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const entity = data.entities[wikidataId];
+                            const description = entity.descriptions?.en?.value || 'No description available';
+                            el.setAttribute('title', description);
+                            bootstrap.Tooltip.getInstance(el).setContent({ '.tooltip-inner': description });
+                        })
+                        .catch(error => {
+                            console.error('Error fetching description:', error);
+                        });
+                });
+            });
+        });
+    </script>
 {% endblock %} 

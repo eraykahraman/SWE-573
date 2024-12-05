@@ -14,7 +14,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status) {
-                    // Update all status badges for this post
                     document.querySelectorAll(`.status-badge-${postId}`).forEach(badge => {
                         badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
                         badge.classList.remove('status-open', 'status-solved');
@@ -33,6 +32,27 @@
                 yourPostsSection.style.display = 'none';
             }
         }
+
+        function handleVote(commentId, voteType) {
+            const url = voteType === 'upvote' 
+                ? `/comment/${commentId}/upvote/`
+                : `/comment/${commentId}/downvote/`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update the vote counts
+                const commentElement = document.querySelector(`#comment-${commentId}`);
+                commentElement.querySelector('.like-count').textContent = data.likes;
+                commentElement.querySelector('.dislike-count').textContent = data.dislikes;
+            })
+            .catch(error => console.error('Error:', error));
+        }
     </script>
 
     <style>
@@ -49,18 +69,17 @@
         }
 
         .status-open {
-            background-color: #fff3cd;  /* Light yellow background */
-            color: #856404;  /* Dark yellow text */
+            background-color: #fff3cd;
+            color: #856404;
             border: 1px solid #ffeeba;
         }
 
         .status-solved {
-            background-color: #d4edda;  /* Light green background */
-            color: #155724;  /* Dark green text */
+            background-color: #d4edda;
+            color: #155724;
             border: 1px solid #c3e6cb;
         }
 
-        /* Add these new hover effects */
         .status-badge[onclick] {
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -103,6 +122,46 @@
             align-items: center;
             width: 100%;
             margin-bottom: 15px;
+        }
+
+        .comment-actions {
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .comment-actions .btn {
+            padding: 2px 8px;
+            font-size: 0.8rem;
+        }
+        
+        .comment-actions .btn i {
+            margin-right: 3px;
+        }
+
+        .comment {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .comment-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .comment-content {
+            margin: 10px 0;
+        }
+
+        .comment-actions {
+            margin-top: 10px;
+            text-align: right;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
         }
     </style>
 
@@ -213,9 +272,27 @@
                                         <div class="comments-section mt-3">
                                             <h6>Comments</h6>
                                             {% for comment in post.comment_list %}
-                                                <div class="comment mb-2">
-                                                    <small class="text-muted">{{ comment.author.username }} - {{ comment.created_at|date:"M d, Y" }}</small>
-                                                    <p class="mb-1">{{ comment.content }}</p>
+                                                <div class="comment" id="comment-{{ comment.id }}">
+                                                    <div class="comment-header">
+                                                        <small class="text-muted">
+                                                            <strong>{{ comment.author.username }}</strong> - {{ comment.created_at|date:"M d, Y" }}
+                                                        </small>
+                                                    </div>
+                                                    <div class="comment-content">
+                                                        {{ comment.content }}
+                                                    </div>
+                                                    <div class="comment-actions">
+                                                        <span class="me-3">
+                                                            <button onclick="handleVote({{ comment.id }}, 'upvote')" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-thumbs-up"></i> Like <span class="like-count">{{ comment.total_likes }}</span>
+                                                            </button>
+                                                        </span>
+                                                        <span>
+                                                            <button onclick="handleVote({{ comment.id }}, 'downvote')" class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-thumbs-down"></i> Dislike <span class="dislike-count">{{ comment.total_dislikes }}</span>
+                                                            </button>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             {% endfor %}
                                             

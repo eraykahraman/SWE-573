@@ -122,9 +122,17 @@ class Reply(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(User, related_name='reply_likes', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='reply_dislikes', blank=True)
 
     class Meta:
         ordering = ['created_at']
+
+    def total_likes(self):
+        return self.likes.count()
+
+    def total_dislikes(self):
+        return self.dislikes.count()
 
     def __str__(self):
         return f'Reply by {self.author.username} on {self.created_at}'

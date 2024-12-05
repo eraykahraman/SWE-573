@@ -16,4 +16,6 @@ urlpatterns = [
     path('post/<int:post_id>/', views.post_detail, name='post_detail'),
     path('comment/<int:comment_id>/reply/', views.add_reply, name='add_reply'),
     path('reply/<int:reply_id>/reply/', views.add_reply, name='add_nested_reply'),
+    path('reply/<int:reply_id>/upvote/', views.upvote_reply, name='upvote_reply'),
+    path('reply/<int:reply_id>/downvote/', views.downvote_reply, name='downvote_reply'),
 ]

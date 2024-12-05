@@ -10,6 +10,7 @@ from .forms import PostForm, CommentForm, ProfileUpdateForm
 import requests
 import json
 from django.db.models import Q
+from django.utils import timezone
 
 # Home view: Display all posts
 def home(request):
@@ -256,18 +257,28 @@ def profile(request):
 
 @login_required
 def add_comment(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.author = request.user
-            comment.post = post
-            comment.save()
-            messages.success(request, 'Comment added successfully!')
-        else:
-            messages.error(request, 'Error adding comment.')
-    return redirect('post_detail', post_id=post_id)
+    if request.method == 'POST' and request.user.is_authenticated:
+        data = json.loads(request.body)
+        content = data.get('content')
+        post = get_object_or_404(Post, id=post_id)
+        
+        comment = Comment.objects.create(
+            post=post,
+            author=request.user,
+            content=content
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'comment': {
+                'id': comment.id,
+                'content': comment.content,
+                'author': comment.author.username,
+                'created_at': comment.created_at.strftime('%b %d, %Y')
+            }
+        })
+    
+    return JsonResponse({'success': False}, status=400)
 
 @login_required
 @require_POST
@@ -433,4 +444,36 @@ def add_reply(request, comment_id=None, reply_id=None):
                     content=content
                 )
             return redirect('post_detail', post_id=parent_comment.post.id)
+
+@login_required
+@require_POST
+def upvote_reply(request, reply_id):
+    reply = get_object_or_404(Reply, id=reply_id)
+    
+    if request.user in reply.likes.all():
+        reply.likes.remove(request.user)
+    else:
+        reply.likes.add(request.user)
+        reply.dislikes.remove(request.user)
+    
+    return JsonResponse({
+        'likes': reply.likes.count(),
+        'dislikes': reply.dislikes.count()
+    })
+
+@login_required
+@require_POST
+def downvote_reply(request, reply_id):
+    reply = get_object_or_404(Reply, id=reply_id)
+    
+    if request.user in reply.dislikes.all():
+        reply.dislikes.remove(request.user)
+    else:
+        reply.dislikes.add(request.user)
+        reply.likes.remove(request.user)
+    
+    return JsonResponse({
+        'likes': reply.likes.count(),
+        'dislikes': reply.dislikes.count()
+    })
 

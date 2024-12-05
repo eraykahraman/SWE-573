@@ -254,27 +254,29 @@ def edit_post(request, post_id):
 def upvote_comment(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
     
-    # If user already liked, remove the like (toggle off)
     if request.user in comment.likes.all():
         comment.likes.remove(request.user)
     else:
-        # If user hasn't liked, add like and remove dislike if exists
         comment.likes.add(request.user)
         comment.dislikes.remove(request.user)
     
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('home')))
+    return JsonResponse({
+        'likes': comment.total_likes(),
+        'dislikes': comment.total_dislikes()
+    })
 
 @login_required
 def downvote_comment(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
     
-    # If user already disliked, remove the dislike (toggle off)
     if request.user in comment.dislikes.all():
         comment.dislikes.remove(request.user)
     else:
-        # If user hasn't disliked, add dislike and remove like if exists
         comment.dislikes.add(request.user)
         comment.likes.remove(request.user)
     
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('home')))
+    return JsonResponse({
+        'likes': comment.total_likes(),
+        'dislikes': comment.total_dislikes()
+    })
 

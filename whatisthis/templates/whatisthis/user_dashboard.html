@@ -108,6 +108,15 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="description-input" class="form-label">Description</label>
+                                <input type="text" 
+                                       id="description-input" 
+                                       name="description" 
+                                       class="form-control" 
+                                       placeholder="Search in descriptions..."
+                                       value="{{ request.GET.description }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="tags-input" class="form-label">Tags</label>
                                 <input type="text" id="tags-input" class="form-control" placeholder="Search for tags...">
                                 <div id="tags-suggestions" class="list-group mt-2"></div>
@@ -185,16 +194,28 @@
             }
 
             function clearSearch() {
-                // Clear text inputs
-                const textInputs = document.querySelectorAll('#searchForm input[type="text"]');
-                textInputs.forEach(input => input.value = '');
+                // Clear all form inputs
+                const form = document.getElementById('searchForm');
+                const inputs = form.getElementsByTagName('input');
+                for (let input of inputs) {
+                    input.value = '';
+                }
+
+                // Clear all select elements
+                const selects = form.getElementsByTagName('select');
+                for (let select of selects) {
+                    select.selectedIndex = 0;
+                }
+
+                // Clear tags
+                selectedTags = [];
+                updateSelectedTags();
                 
-                // Reset select dropdowns
-                const selectInputs = document.querySelectorAll('#searchForm select');
-                selectInputs.forEach(select => select.selectedIndex = 0);
+                // Clear description specifically
+                document.querySelector('input[name="description"]').value = '';
                 
-                // Submit the form
-                document.getElementById('searchForm').submit();
+                // Submit the form to refresh results
+                form.submit();
             }
 
             function showTagDescription(label, wikidataId) {
@@ -313,16 +334,49 @@
             }
 
             function submitSearch() {
-                console.log('Submitting search with tags:', selectedTags); // Debug log
+                console.log('Submitting search with tags:', selectedTags);
+                
+                // Get the description value
+                const descriptionInput = document.getElementById('description-input');
+                if (descriptionInput.value.trim()) {
+                    console.log('Searching description:', descriptionInput.value);
+                }
+                
                 $('#searchForm').submit();
             }
 
-            // Add this to handle the clear button
+            // Add event listener for description input if you want to search as you type
+            let descriptionTimeout;
+            document.getElementById('description-input').addEventListener('input', function() {
+                clearTimeout(descriptionTimeout);
+                descriptionTimeout = setTimeout(() => {
+                    submitSearch();
+                }, 500); // Wait 500ms after user stops typing before searching
+            });
+
             function clearSearch() {
+                // Clear all form inputs
+                const form = document.getElementById('searchForm');
+                const inputs = form.getElementsByTagName('input');
+                for (let input of inputs) {
+                    input.value = '';
+                }
+
+                // Clear all select elements
+                const selects = form.getElementsByTagName('select');
+                for (let select of selects) {
+                    select.selectedIndex = 0;
+                }
+
+                // Clear tags
                 selectedTags = [];
                 updateSelectedTags();
-                document.getElementById('searchForm').reset();
-                submitSearch();
+                
+                // Clear description specifically
+                document.querySelector('input[name="description"]').value = '';
+                
+                // Submit the form to refresh results
+                form.submit();
             }
         </script>
 

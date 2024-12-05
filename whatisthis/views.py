@@ -14,7 +14,7 @@ from django.db.models import Q
 # Home view: Display all posts
 def home(request):
     # Start with all posts
-    posts = Post.objects.all()
+    posts = Post.objects.all().prefetch_related('tags')
     
     # Define size ranges
     size_ranges = {
@@ -79,6 +79,27 @@ def home(request):
     # Order posts by creation date
     posts = posts.order_by('-created_at')
     
+    # Handle tag filtering
+    tags_json = request.GET.get('tags', '')
+    print("Received tags:", tags_json)  # Debug print
+    
+    if tags_json:
+        try:
+            # Parse the JSON string to get tag IDs
+            tag_ids = json.loads(tags_json)
+            print("Parsed tag IDs:", tag_ids)  # Debug print
+            
+            # Get all posts that have ANY of these tags
+            if tag_ids:
+                posts = posts.filter(tags__wikidata_id__in=tag_ids).distinct()
+                print("Found posts:", posts.count())  # Debug print
+                
+                if not posts.exists():
+                    messages.info(request, "No posts found with the specified tags.")
+        except json.JSONDecodeError:
+            print("Error parsing tags JSON")  # Debug print
+            messages.error(request, "Error processing tag search")
+
     if request.user.is_authenticated:
         user_posts = Post.objects.filter(author=request.user)
         for post in posts:
@@ -87,6 +108,7 @@ def home(request):
             'posts': posts,
             'comment_form': CommentForm(),
             'user_posts': user_posts,
+            'all_tags': Tag.objects.all(),
         })
     else:
         for post in posts:
@@ -347,5 +369,19 @@ def downvote_comment(request, comment_id):
     return JsonResponse({
         'likes': comment.total_likes(),
         'dislikes': comment.total_dislikes()
+    })
+
+def search_tags(request):
+    query = request.GET.get('q', '')
+    tags = Tag.objects.filter(
+        Q(label__icontains=query) | 
+        Q(wikidata_id__icontains=query)
+    )[:10]  # Limit to 10 results
+    
+    results = [{'id': tag.id, 'label': tag.label, 'wikidata_id': tag.wikidata_id} 
+               for tag in tags]
+    
+    return JsonResponse({
+        'results': results
     })
 

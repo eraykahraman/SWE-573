@@ -6,7 +6,7 @@ from .models import Post, Tag, Comment, Reply
 from django.contrib import messages
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
-from .forms import PostForm, CommentForm, ProfileUpdateForm
+from .forms import PostForm, CommentForm, ProfileUpdateForm, ReplyForm
 import requests
 import json
 from django.db.models import Q
@@ -412,38 +412,20 @@ def post_detail(request, post_id):
     })
 
 @login_required
-def add_reply(request, comment_id=None, reply_id=None):
+def add_reply(request, comment_id):
     if request.method == 'POST':
+        comment = get_object_or_404(Comment, id=comment_id)
         content = request.POST.get('content')
         
-        if reply_id:
-            # If replying to a reply
-            parent_reply = get_object_or_404(Reply, id=reply_id)
-            # Get the original comment by traversing up the reply chain
-            original_comment = parent_reply.comment
-            while not original_comment and parent_reply.parent:
-                parent_reply = parent_reply.parent
-                original_comment = parent_reply.comment
-                
-            if content:
-                Reply.objects.create(
-                    comment=original_comment,
-                    parent=parent_reply,
-                    author=request.user,
-                    content=content
-                )
-            return redirect('post_detail', post_id=original_comment.post.id)
-            
-        else:
-            # If replying to a comment
-            parent_comment = get_object_or_404(Comment, id=comment_id)
-            if content:
-                Reply.objects.create(
-                    comment=parent_comment,
-                    author=request.user,
-                    content=content
-                )
-            return redirect('post_detail', post_id=parent_comment.post.id)
+        reply = Reply.objects.create(
+            comment=comment,
+            author=request.user,
+            content=content
+        )
+        
+        return redirect('post_detail', post_id=comment.post.id)
+    
+    return redirect('home')
 
 @login_required
 @require_POST
@@ -476,4 +458,23 @@ def downvote_reply(request, reply_id):
         'likes': reply.likes.count(),
         'dislikes': reply.dislikes.count()
     })
+
+@login_required
+def add_nested_reply(request, reply_id):
+    parent_reply = get_object_or_404(Reply, id=reply_id)
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        
+        # Create the nested reply
+        nested_reply = Reply.objects.create(
+            author=request.user,
+            content=content,
+            parent=parent_reply,
+            comment=parent_reply.comment  # Keep the same root comment
+        )
+        
+        # Redirect to the post detail page
+        return redirect('post_detail', post_id=parent_reply.comment.post.id)
+    
+    return redirect('home')
 

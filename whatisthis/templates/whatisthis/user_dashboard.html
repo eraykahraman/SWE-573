@@ -528,6 +528,74 @@
                 color: #666;
                 margin-top: 4px;
             }
+
+            .post-card {
+                height: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .post-image-container {
+                height: 300px;
+                overflow: hidden;
+                position: relative;
+            }
+            
+            .post-image {
+                width: 100%;
+                height: 300px;
+                object-fit: cover;
+                position: relative;
+                transition: transform 0.3s ease;
+            }
+            
+            .post-image:hover {
+                transform: scale(1.1);
+            }
+            
+            .card-body {
+                padding: 1.25rem;
+            }
+            
+            .post-details {
+                margin-top: 15px;
+            }
+
+            /* Update styles for the modal */
+            .modal-dialog.modal-xl {
+                max-width: 95%;
+            }
+            
+            .modal-content {
+                background-color: white;
+                border-radius: 8px;
+            }
+            
+            .modal-header {
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .post-details {
+                height: 100%;
+                overflow-y: auto;
+                background-color: white;
+                color: #333;
+            }
+            
+            #modalImage {
+                max-height: 85vh;
+                width: auto;
+                max-width: 100%;
+                object-fit: contain;
+            }
+            
+            .post-details p {
+                margin-bottom: 0.5rem;
+            }
         </style>
 
         <div class="row">
@@ -611,16 +679,20 @@
                     <div class="row">
                         {% for post in posts %}
                             <div class="col-md-4 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <div class="status-badge status-badge-{{ post.id }} {% if post.status == 'solved' %}status-solved{% else %}status-open{% endif %}">
-                                            {{ post.status|title }}
-                                        </div>
-                                        <h5 class="card-title">{{ post.name }}</h5>
-                                        <p class="card-text">{{ post.description }}</p>
+                                <div class="card post-card">
+                                    <div class="post-image-container">
                                         {% if post.image %}
-                                            <img src="{{ post.image.url }}" class="img-fluid mb-2" alt="{{ post.name }}">
+                                            <img src="{{ post.image.url }}" 
+                                                 class="post-image" 
+                                                 alt="{{ post.name }}"
+                                                 onclick="showFullImage(this.src, '{{ post.name }}', '{{ post.description }}', '{{ post.material }}', 
+                                                 '{{ post.size_x }}', '{{ post.size_y }}', '{{ post.size_z }}', '{{ post.shape }}', '{{ post.text_and_language }}', '{{ post.found_location }}', '{{ post.color }}', '{{ post.tags.all|join:", " }}')"
+                                                 style="cursor: pointer;">
                                         {% endif %}
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ post.name }}</h5>
+                                        <p class="card-text">{{ post.description|truncatewords:20 }}</p>
                                         <div class="post-details">
                                             <p><strong>Material:</strong> {{ post.material }}</p>
                                             <p><strong>Size:</strong> 
@@ -650,11 +722,10 @@
                                             {% endwith %}
                                             </p>
                                         </div>
-                                        <p class="card-text"><small class="text-muted">Posted by {{ post.author.username }}</small></p>
-                                        
-                                        <!-- Comments Section -->
-                                        <div class="comments-section mt-3">
-                                            <h6>Comments</h6>
+                                        <button class="btn btn-secondary" onclick="toggleComments({{ post.id }})">
+                                            <i class="fas fa-comments"></i> Comments
+                                        </button>
+                                        <div class="comments-section mt-3" id="comments-{{ post.id }}" style="display: none;">
                                             {% for comment in post.comment_list %}
                                                 <div class="comment" id="comment-{{ comment.id }}">
                                                     <div class="comment-header">
@@ -721,5 +792,78 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        function toggleComments(postId) {
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            if (commentsSection.style.display === 'none') {
+                commentsSection.style.display = 'block';
+            } else {
+                commentsSection.style.display = 'none';
+            }
+        }
+    </script>
+
+    <!-- Add this modal HTML at the bottom of your body -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <img id="modalImage" src="" class="img-fluid" alt="Full size image">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="post-details p-3">
+                                <h4 id="modalPostName"></h4>
+                                <p id="modalDescription" class="text-muted mb-4"></p>
+                                <div id="modalPostDetails">
+                                    <p><strong>Material:</strong> <span id="modalMaterial"></span></p>
+                                    <p><strong>Size:</strong> 
+                                        Length: <span id="modalSizeX"></span> cm, 
+                                        Width: <span id="modalSizeY"></span> cm, 
+                                        Height: <span id="modalSizeZ"></span> cm
+                                    </p>
+                                    <p><strong>Shape:</strong> <span id="modalShape"></span></p>
+                                    <p><strong>Text & Language:</strong> <span id="modalTextLanguage"></span></p>
+                                    <p><strong>Found Location:</strong> <span id="modalLocation"></span></p>
+                                    <p><strong>Color:</strong> <span id="modalColor"></span></p>
+                                    <p><strong>Tags:</strong> <span id="modalTags"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showFullImage(imageSrc, name, description, material, sizeX, sizeY, sizeZ, shape, textLanguage, location, color, tags) {
+            // Set image
+            document.getElementById('modalImage').src = imageSrc;
+            
+            // Set post details
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('modalPostName').textContent = name;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalMaterial').textContent = material;
+            document.getElementById('modalSizeX').textContent = sizeX;
+            document.getElementById('modalSizeY').textContent = sizeY;
+            document.getElementById('modalSizeZ').textContent = sizeZ;
+            document.getElementById('modalShape').textContent = shape;
+            document.getElementById('modalTextLanguage').textContent = textLanguage;
+            document.getElementById('modalLocation').textContent = location;
+            document.getElementById('modalColor').textContent = color;
+            document.getElementById('modalTags').textContent = tags;
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
     </script>
 {% endblock %} 

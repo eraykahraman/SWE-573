@@ -3,7 +3,8 @@
 {% block content %}
     {% csrf_token %}
 
-    <div class="container">
+ 
+
         <div class="row">
             <div class="col-12 mb-4">
                 <button type="button" class="btn btn-primary" onclick="toggleSearch()">
@@ -105,6 +106,13 @@
                                     <option value="Multicolor" {% if request.GET.color == 'Multicolor' %}selected{% endif %}>Multicolor</option>
                                     <option value="Other" {% if request.GET.color == 'Other' %}selected{% endif %}>Other</option>
                                 </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tags-input" class="form-label">Tags</label>
+                                <input type="text" id="tags-input" class="form-control" placeholder="Search for tags...">
+                                <div id="tags-suggestions" class="list-group mt-2"></div>
+                                <div id="selected-tags-container" class="mt-2"></div>
+                                <input type="hidden" id="selected-tags" name="tags">
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">Search</button>
@@ -227,6 +235,94 @@
                     .catch(error => {
                         console.error('Error fetching description:', error);
                     });
+            }
+
+            const tagsInput = document.getElementById('tags-input');
+            const tagsSuggestions = document.getElementById('tags-suggestions');
+            const selectedTagsContainer = document.getElementById('selected-tags-container');
+            const selectedTagsField = document.getElementById('selected-tags');
+
+            let selectedTags = [];
+
+            tagsInput.addEventListener('input', async () => {
+                const query = tagsInput.value.trim();
+                if (query.length < 2) {
+                    tagsSuggestions.innerHTML = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/fetch-tags/?query=${query}`);
+                    if (!response.ok) throw new Error('Failed to fetch tags');
+                    const tags = await response.json();
+
+                    tagsSuggestions.innerHTML = '';
+                    
+                    if (tags.length === 0) {
+                        tagsSuggestions.innerHTML = '<div class="list-group-item text-muted">No tags found</div>';
+                        return;
+                    }
+
+                    tags.forEach(tag => {
+                        if (!selectedTags.find(t => t.wikidata_id === tag.wikidata_id)) {
+                            const tagElement = document.createElement('div');
+                            tagElement.classList.add('list-group-item', 'list-group-item-action');
+                            tagElement.innerHTML = `
+                                <div><strong>${tag.label}</strong></div>
+                                <small class="text-muted">${tag.description || 'No description available'}</small>
+                            `;
+                            tagElement.addEventListener('click', () => {
+                                addTag(tag);
+                            });
+                            tagsSuggestions.appendChild(tagElement);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                    tagsSuggestions.innerHTML = '<div class="list-group-item text-danger">Error loading tags</div>';
+                }
+            });
+
+            function addTag(tag) {
+                selectedTags.push(tag);
+                updateSelectedTags();
+                tagsInput.value = '';
+                tagsSuggestions.innerHTML = '';
+                submitSearch();  // Call submitSearch instead of directly submitting the form
+            }
+
+            function removeTag(wikidataId) {
+                selectedTags = selectedTags.filter(tag => tag.wikidata_id !== wikidataId);
+                updateSelectedTags();
+                submitSearch();  // Call submitSearch when removing tags too
+            }
+
+            function updateSelectedTags() {
+                // Store the full tag objects for reference
+                selectedTagsField.value = JSON.stringify(selectedTags.map(tag => tag.wikidata_id));
+                
+                selectedTagsContainer.innerHTML = selectedTags.map(tag => `
+                    <span class="badge bg-primary me-2 mb-2 p-2">
+                        ${tag.label}
+                        <button type="button" class="btn-close btn-close-white ms-2" 
+                                onclick="removeTag('${tag.wikidata_id}')" 
+                                style="font-size: 0.5em;">
+                        </button>
+                    </span>
+                `).join('');
+            }
+
+            function submitSearch() {
+                console.log('Submitting search with tags:', selectedTags); // Debug log
+                $('#searchForm').submit();
+            }
+
+            // Add this to handle the clear button
+            function clearSearch() {
+                selectedTags = [];
+                updateSelectedTags();
+                document.getElementById('searchForm').reset();
+                submitSearch();
             }
         </script>
 
@@ -366,6 +462,17 @@
                 padding: 1.5rem;
                 font-size: 1rem;
                 line-height: 1.5;
+            }
+            .select2-result-tag {
+                padding: 6px;
+            }
+            .select2-result-tag__label {
+                font-weight: bold;
+            }
+            .select2-result-tag__description {
+                font-size: 0.8em;
+                color: #666;
+                margin-top: 4px;
             }
         </style>
 

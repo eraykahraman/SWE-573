@@ -13,4 +13,5 @@ urlpatterns = [
     path('comment/<int:comment_id>/upvote/', views.upvote_comment, name='upvote_comment'),
     path('comment/<int:comment_id>/downvote/', views.downvote_comment, name='downvote_comment'),
     path('search-tags/', views.search_tags, name='search_tags'),
+    path('post/<int:post_id>/', views.post_detail, name='post_detail'),
 ]

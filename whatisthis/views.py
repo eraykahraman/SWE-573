@@ -267,7 +267,7 @@ def add_comment(request, post_id):
             messages.success(request, 'Comment added successfully!')
         else:
             messages.error(request, 'Error adding comment.')
-    return redirect('home')
+    return redirect('post_detail', post_id=post_id)
 
 @login_required
 @require_POST
@@ -389,5 +389,14 @@ def search_tags(request):
     
     return JsonResponse({
         'results': results
+    })
+
+def post_detail(request, post_id):
+    post = get_object_or_404(Post.objects.prefetch_related('tags'), id=post_id)
+    post.comment_list = Comment.objects.filter(post=post).order_by('-created_at')
+    
+    return render(request, 'whatisthis/post_detail.html', {
+        'post': post,
+        'comment_form': CommentForm(),
     })
 

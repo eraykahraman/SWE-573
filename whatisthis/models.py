@@ -89,6 +89,10 @@ class Comment(models.Model):
     def total_dislikes(self):
         return self.dislikes.count()
 
+    @property
+    def replies(self):
+        return self.replies.all()  # This uses the related_name from the Reply model
+
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.name}"
     
@@ -110,6 +114,20 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+    
+
+class Reply(models.Model):
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='replies', null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Reply by {self.author.username} on {self.created_at}'
     
 
 

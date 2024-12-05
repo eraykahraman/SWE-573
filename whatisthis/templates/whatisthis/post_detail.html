@@ -144,8 +144,28 @@
                                         <i class="fas fa-thumbs-down"></i> Dislike 
                                         <span class="dislike-count-{{ comment.id }}">{{ comment.total_dislikes }}</span>
                                     </button>
+                                    <!-- Reply Button -->
+                                    <button onclick="toggleReplyForm({{ comment.id }})" 
+                                            class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-reply"></i> Reply
+                                    </button>
                                 </div>
+                                <!-- Reply Form -->
+                                <form method="post" action="{% url 'add_reply' comment.id %}" class="reply-form" id="reply-form-{{ comment.id }}" style="display: none;">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <textarea name="content" class="form-control" rows="2" 
+                                                  placeholder="Write your reply here..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mt-2">Add Reply</button>
+                                </form>
                             {% endif %}
+                            <!-- Display Replies -->
+                            <div class="replies">
+                                {% for reply in comment.replies.all %}
+                                    {% include 'whatisthis/reply.html' with reply=reply %}
+                                {% endfor %}
+                            </div>
                         </div>
                     {% empty %}
                         <p class="text-muted">No comments yet.</p>
@@ -324,6 +344,34 @@
         border-color: #80bdff;
         box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
     }
+
+    .replies {
+        margin-left: 30px;
+        margin-top: 10px;
+    }
+
+    .reply {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .reply-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .reply-content {
+        color: #333;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
 </style>
 
 <script>
@@ -383,6 +431,11 @@
             }
         })
         .catch(error => console.error('Error:', error));
+    }
+
+    function toggleReplyForm(replyId) {
+        const form = document.getElementById(`reply-form-${replyId}`);
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
 </script>
 {% endblock %} 

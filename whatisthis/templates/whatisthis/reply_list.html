@@ -1,0 +1,56 @@
+{% for reply in replies %}
+    {% if reply.parent_comment.parent_comment %}
+        <div class="reply-thread reply-to-reply-reply" id="reply-{{ reply.id }}">
+    {% elif reply.parent_comment %}
+        <div class="reply-thread reply-to-reply" id="reply-{{ reply.id }}">
+    {% else %}
+        <div class="reply-thread reply-to-comment" id="reply-{{ reply.id }}">
+    {% endif %}
+        <div class="reply">
+            <div class="reply-header">
+                <strong>{{ reply.author.username }}</strong>
+                <small class="text-muted">{{ reply.created_at|date:"M d, Y" }}</small>
+            </div>
+            <div class="reply-content">
+                {{ reply.content }}
+            </div>
+            {% if user.is_authenticated %}
+                <div class="reply-actions">
+                    <button onclick="handleVote({{ reply.id }}, 'upvote', true)" 
+                            class="btn btn-sm btn-outline-success {% if user in reply.likes.all %}active{% endif %}">
+                        <i class="fas fa-thumbs-up"></i> Like 
+                        <span class="like-count-{{ reply.id }}">{{ reply.total_likes }}</span>
+                    </button>
+                    <button onclick="handleVote({{ reply.id }}, 'downvote', true)" 
+                            class="btn btn-sm btn-outline-danger {% if user in reply.dislikes.all %}active{% endif %}">
+                        <i class="fas fa-thumbs-down"></i> Dislike 
+                        <span class="dislike-count-{{ reply.id }}">{{ reply.total_dislikes }}</span>
+                    </button>
+                    <button onclick="toggleReplyForm({{ reply.id }})" 
+                            class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                </div>
+
+                <!-- Nested Reply Form -->
+                <div class="reply-form-container" id="reply-form-{{ reply.id }}" style="display: none;">
+                    <form method="post" action="{% url 'add_reply' reply.id %}" class="mt-3">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <textarea name="content" class="form-control" rows="2" 
+                                      placeholder="Write your reply..." required></textarea>
+                        </div>
+                        <div class="mt-2">
+                            <button type="submit" class="btn btn-sm btn-primary">Submit Reply</button>
+                            <button type="button" class="btn btn-sm btn-secondary" 
+                                    onclick="toggleReplyForm({{ reply.id }})">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recursive inclusion for deeper replies -->
+        {% include 'whatisthis/reply_list.html' with replies=reply.comment_set.all %}
+    </div>
+{% endfor %} 

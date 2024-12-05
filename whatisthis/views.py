@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from .models import Post, Tag, Comment
+from .models import Post, Tag, Comment, Reply
 from django.contrib import messages
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
@@ -399,4 +399,38 @@ def post_detail(request, post_id):
         'post': post,
         'comment_form': CommentForm(),
     })
+
+@login_required
+def add_reply(request, comment_id=None, reply_id=None):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        
+        if reply_id:
+            # If replying to a reply
+            parent_reply = get_object_or_404(Reply, id=reply_id)
+            # Get the original comment by traversing up the reply chain
+            original_comment = parent_reply.comment
+            while not original_comment and parent_reply.parent:
+                parent_reply = parent_reply.parent
+                original_comment = parent_reply.comment
+                
+            if content:
+                Reply.objects.create(
+                    comment=original_comment,
+                    parent=parent_reply,
+                    author=request.user,
+                    content=content
+                )
+            return redirect('post_detail', post_id=original_comment.post.id)
+            
+        else:
+            # If replying to a comment
+            parent_comment = get_object_or_404(Comment, id=comment_id)
+            if content:
+                Reply.objects.create(
+                    comment=parent_comment,
+                    author=request.user,
+                    content=content
+                )
+            return redirect('post_detail', post_id=parent_comment.post.id)
 

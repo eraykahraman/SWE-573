@@ -1,6 +1,5 @@
-
 from django.contrib import admin
-from .models import Post, PostImage, Tag,Comment
+from .models import Post, PostImage, Tag, Comment, Reply
 
 # Inline for managing PostImage directly within the Post admin
 class PostImageInline(admin.TabularInline):
@@ -28,7 +27,7 @@ class PostImageAdmin(admin.ModelAdmin):
     list_display = ('post', 'image')
     list_filter = ('post',)
 
-
+# Admin for Comment
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('content', 'author', 'post', 'created_at', 'total_likes', 'total_dislikes')
@@ -41,3 +40,11 @@ class CommentAdmin(admin.ModelAdmin):
 
     def total_dislikes(self, obj):
         return obj.dislikes.count()
+
+# Admin for Reply
+@admin.register(Reply)
+class ReplyAdmin(admin.ModelAdmin):
+    list_display = ('content', 'author', 'comment', 'parent', 'created_at')
+    search_fields = ('content', 'author__username', 'comment__content')
+    list_filter = ('created_at', 'author')
+    readonly_fields = ('created_at',)

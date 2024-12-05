@@ -14,7 +14,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status) {
-                    // Update all status badges for this post
                     document.querySelectorAll(`.status-badge-${postId}`).forEach(badge => {
                         badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
                         badge.classList.remove('status-open', 'status-solved');
@@ -49,18 +48,17 @@
         }
 
         .status-open {
-            background-color: #fff3cd;  /* Light yellow background */
-            color: #856404;  /* Dark yellow text */
+            background-color: #fff3cd;
+            color: #856404;
             border: 1px solid #ffeeba;
         }
 
         .status-solved {
-            background-color: #d4edda;  /* Light green background */
-            color: #155724;  /* Dark green text */
+            background-color: #d4edda;
+            color: #155724;
             border: 1px solid #c3e6cb;
         }
 
-        /* Add these new hover effects */
         .status-badge[onclick] {
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -103,6 +101,20 @@
             align-items: center;
             width: 100%;
             margin-bottom: 15px;
+        }
+
+        .comment-actions {
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .comment-actions .btn {
+            padding: 2px 8px;
+            font-size: 0.8rem;
+        }
+        
+        .comment-actions .btn i {
+            margin-right: 3px;
         }
     </style>
 
@@ -216,6 +228,18 @@
                                                 <div class="comment mb-2">
                                                     <small class="text-muted">{{ comment.author.username }} - {{ comment.created_at|date:"M d, Y" }}</small>
                                                     <p class="mb-1">{{ comment.content }}</p>
+                                                    <div class="comment-actions text-end">
+                                                        <span class="me-3">
+                                                            <a href="{% url 'upvote_comment' comment.id %}" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-thumbs-up"></i> Like {{ comment.total_likes }}
+                                                            </a>
+                                                        </span>
+                                                        <span>
+                                                            <a href="{% url 'downvote_comment' comment.id %}" class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-thumbs-down"></i> Dislike {{ comment.total_dislikes }}
+                                                            </a>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             {% endfor %}
                                             

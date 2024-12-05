@@ -1,15 +1,14 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from .models import Post
-from .forms import PostForm, CommentForm, ProfileUpdateForm
-from django.http import JsonResponse
-import requests
-from .models import Tag,Comment
-import json
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+from django.urls import reverse
+from .models import Post, Tag, Comment
 from django.contrib import messages
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
+from .forms import PostForm, CommentForm, ProfileUpdateForm
+import requests
+import json
 
 # Home view: Display all posts
 def home(request):
@@ -250,4 +249,32 @@ def edit_post(request, post_id):
         'post': post,
         'existing_tags': json.dumps(existing_tags)
     })
+
+@login_required
+def upvote_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # If user already liked, remove the like (toggle off)
+    if request.user in comment.likes.all():
+        comment.likes.remove(request.user)
+    else:
+        # If user hasn't liked, add like and remove dislike if exists
+        comment.likes.add(request.user)
+        comment.dislikes.remove(request.user)
+    
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('home')))
+
+@login_required
+def downvote_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # If user already disliked, remove the dislike (toggle off)
+    if request.user in comment.dislikes.all():
+        comment.dislikes.remove(request.user)
+    else:
+        # If user hasn't disliked, add dislike and remove like if exists
+        comment.dislikes.add(request.user)
+        comment.likes.remove(request.user)
+    
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('home')))
 

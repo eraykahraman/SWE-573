@@ -188,6 +188,46 @@
                 // Submit the form
                 document.getElementById('searchForm').submit();
             }
+
+            function showTagDescription(label, wikidataId) {
+                fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&format=json&origin=*`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const entity = data.entities[wikidataId];
+                        const description = entity.descriptions?.en?.value || 'No description available';
+
+                        // Create or get the modal
+                        let modal = document.getElementById('tagDescriptionModal');
+                        if (!modal) {
+                            modal = document.createElement('div');
+                            modal.id = 'tagDescriptionModal';
+                            modal.className = 'modal fade';
+                            modal.innerHTML = `
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body"></div>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(modal);
+                        }
+
+                        // Update modal content
+                        modal.querySelector('.modal-title').textContent = label;
+                        modal.querySelector('.modal-body').textContent = description;
+
+                        // Show the modal
+                        const bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching description:', error);
+                    });
+            }
         </script>
 
         <style>
@@ -310,6 +350,23 @@
             .card {
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
+
+            .tag-badge {
+                transition: transform 0.1s ease-in-out;
+                margin-right: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .tag-badge:hover {
+                transform: scale(1.05);
+            }
+            .modal-dialog {
+                max-width: 400px;
+            }
+            .modal-body {
+                padding: 1.5rem;
+                font-size: 1rem;
+                line-height: 1.5;
+            }
         </style>
 
         <div class="row">
@@ -360,7 +417,13 @@
                                             {% with post_tags=post.tags.all %}
                                                 {% if post_tags %}
                                                     {% for tag in post_tags %}
-                                                        <span class="badge bg-secondary">{{ tag }}</span>
+                                                        <span class="badge bg-secondary tag-badge" 
+                                                              data-bs-toggle="tooltip" 
+                                                              title="Loading description..."
+                                                              data-wikidata-id="{{ tag.wikidata_id }}"
+                                                              style="cursor: pointer;">
+                                                            {{ tag }}
+                                                        </span>
                                                     {% endfor %}
                                                 {% else %}
                                                     <span class="text-muted">No tags</span>
@@ -412,7 +475,13 @@
                                             {% with post_tags=post.tags.all %}
                                                 {% if post_tags %}
                                                     {% for tag in post_tags %}
-                                                        <span class="badge bg-secondary">{{ tag }}</span>
+                                                        <span class="badge bg-secondary tag-badge" 
+                                                              data-bs-toggle="tooltip" 
+                                                              title="Loading description..."
+                                                              data-wikidata-id="{{ tag.wikidata_id }}"
+                                                              style="cursor: pointer;">
+                                                            {{ tag }}
+                                                        </span>
                                                     {% endfor %}
                                                 {% else %}
                                                     <span class="text-muted">No tags</span>
@@ -468,4 +537,28 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            const tooltipList = tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+            tooltipTriggerList.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    const wikidataId = el.getAttribute('data-wikidata-id');
+                    fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&format=json&origin=*`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const entity = data.entities[wikidataId];
+                            const description = entity.descriptions?.en?.value || 'No description available';
+                            el.setAttribute('title', description);
+                            bootstrap.Tooltip.getInstance(el).setContent({ '.tooltip-inner': description });
+                        })
+                        .catch(error => {
+                            console.error('Error fetching description:', error);
+                        });
+                });
+            });
+        });
+    </script>
 {% endblock %} 

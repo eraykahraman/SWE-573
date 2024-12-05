@@ -73,6 +73,12 @@ def home(request):
         posts = posts.filter(color__iexact=request.GET['color'])
         print(f"After color filter: {posts.count()} posts")
     
+    # Description search
+    description_query = request.GET.get('description', '').strip()
+    if description_query:
+        posts = posts.filter(description__icontains=description_query)
+        print(f"After description filter: {posts.count()} posts")
+
     # Print final query for debugging
     print("Final SQL:", posts.query)
     

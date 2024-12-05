@@ -197,7 +197,14 @@ def fetch_tags(request):
     response = requests.get(wikidata_url)
     if response.status_code == 200:
         data = response.json()
-        tags = [{'wikidata_id': item['id'], 'label': item['label']} for item in data.get('search', [])]
+        tags = [
+            {
+                'wikidata_id': item['id'],
+                'label': item['label'],
+                'description': item.get('description', 'No description available')
+            }
+            for item in data.get('search', [])
+        ]
         return JsonResponse(tags, safe=False)
 
     return JsonResponse([], safe=False)

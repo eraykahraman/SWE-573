@@ -18,4 +18,5 @@ urlpatterns = [
     path('reply/<int:reply_id>/reply/', views.add_nested_reply, name='add_nested_reply'),
     path('reply/<int:reply_id>/upvote/', views.upvote_reply, name='upvote_reply'),
     path('reply/<int:reply_id>/downvote/', views.downvote_reply, name='downvote_reply'),
+    path('reply/<int:reply_id>/<str:vote_type>/', views.vote_reply, name='vote_reply'),
 ]

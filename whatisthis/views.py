@@ -478,3 +478,15 @@ def add_nested_reply(request, reply_id):
     
     return redirect('home')
 
+@login_required
+@require_POST
+def vote_reply(request, reply_id, vote_type):
+    reply = get_object_or_404(Reply, id=reply_id)
+    if vote_type == 'upvote':
+        # Logic to handle upvote
+        pass
+    elif vote_type == 'downvote':
+        # Logic to handle downvote
+        pass
+    return JsonResponse({'likes': reply.total_likes, 'dislikes': reply.total_dislikes})
+

@@ -10,12 +10,12 @@
             </div>
             {% if user.is_authenticated %}
                 <div class="reply-actions">
-                    <button onclick="handleVote({{ reply.id }}, 'upvote', true)" 
+                    <button onclick="handleReplyVote({{ reply.id }}, 'upvote')" 
                             class="btn btn-sm btn-outline-success {% if user in reply.likes.all %}active{% endif %}">
                         <i class="fas fa-thumbs-up"></i> Like
                         <span class="like-count-{{ reply.id }}">{{ reply.total_likes }}</span>
                     </button>
-                    <button onclick="handleVote({{ reply.id }}, 'downvote', true)" 
+                    <button onclick="handleReplyVote({{ reply.id }}, 'downvote')" 
                             class="btn btn-sm btn-outline-danger {% if user in reply.dislikes.all %}active{% endif %}">
                         <i class="fas fa-thumbs-down"></i> Dislike
                         <span class="dislike-count-{{ reply.id }}">{{ reply.total_dislikes }}</span>
@@ -90,3 +90,36 @@
         border-radius: 0.5rem;
     }
 </style> 
+
+<script>
+    function handleReplyVote(replyId, voteType) {
+        const url = `/reply/${replyId}/${voteType}/`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update vote counts
+            document.querySelector(`.like-count-${replyId}`).textContent = data.likes;
+            document.querySelector(`.dislike-count-${replyId}`).textContent = data.dislikes;
+            
+            // Update button states
+            const upvoteBtn = document.querySelector(`#reply-${replyId} .btn-outline-success`);
+            const downvoteBtn = document.querySelector(`#reply-${replyId} .btn-outline-danger`);
+            
+            if (voteType === 'upvote') {
+                upvoteBtn.classList.toggle('active');
+                downvoteBtn.classList.remove('active');
+            } else {
+                downvoteBtn.classList.toggle('active');
+                upvoteBtn.classList.remove('active');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script> 

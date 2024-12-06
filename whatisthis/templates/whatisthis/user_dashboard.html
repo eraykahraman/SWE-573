@@ -646,6 +646,14 @@
             .card-text {
                 margin-bottom: 1rem;
             }
+
+            .comment-count {
+                transition: color 0.2s ease;
+            }
+
+            .comment-count:hover {
+                color: #0d6efd;  /* Bootstrap primary color */
+            }
         </style>
 
         <div class="row">
@@ -744,6 +752,15 @@
                                             </div>
 
                                             <h5 class="card-title text-dark">{{ post.name }}</h5>
+                                            <p class="text-muted mb-2">
+                                                <small>
+                                                    <i class="fas fa-user"></i> Posted by: {{ post.author.username }}
+                                                    {% if post.created_at %}
+                                                        • <i class="far fa-clock"></i> {{ post.created_at|date:"M d, Y" }}
+                                                    {% endif %}
+                                                    • <span class="comment-count"><strong><i class="far fa-comment"></i> {{ post.comments.count }} Comments</strong></span>
+                                                </small>
+                                            </p>
                                             <p class="card-text text-secondary">{{ post.description|truncatewords:20 }}</p>
                                             
                                             <div class="post-info">

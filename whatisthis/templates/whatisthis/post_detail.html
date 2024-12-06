@@ -145,12 +145,12 @@
                                 <div class="comment-actions">
                                     <button onclick="handleVote({{ comment.id }}, 'upvote')" 
                                             class="btn btn-sm btn-outline-success {% if user in comment.likes.all %}active{% endif %}">
-                                        <i class="fas fa-thumbs-up"></i> <span>Like</span>
+                                        <i class="fas fa-thumbs-up"></i> Like 
                                         <span class="like-count-{{ comment.id }}">{{ comment.total_likes }}</span>
                                     </button>
                                     <button onclick="handleVote({{ comment.id }}, 'downvote')" 
                                             class="btn btn-sm btn-outline-danger {% if user in comment.dislikes.all %}active{% endif %}">
-                                        <i class="fas fa-thumbs-down"></i> <span>Dislike</span>
+                                        <i class="fas fa-thumbs-down"></i> Dislike 
                                         <span class="dislike-count-{{ comment.id }}">{{ comment.total_dislikes }}</span>
                                     </button>
                                     <button onclick="toggleReplyForm({{ comment.id }})" 
@@ -568,12 +568,12 @@
                         <div class="comment-actions">
                             <button onclick="handleVote(${data.comment.id}, 'upvote')" 
                                     class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-thumbs-up"></i> 
+                                <i class="fas fa-thumbs-up"></i> Like
                                 <span class="like-count-${data.comment.id}">0</span>
                             </button>
                             <button onclick="handleVote(${data.comment.id}, 'downvote')" 
                                     class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-thumbs-down"></i>
+                                <i class="fas fa-thumbs-down"></i> Dislike
                                 <span class="dislike-count-${data.comment.id}">0</span>
                             </button>
                             <button onclick="toggleReplyForm(${data.comment.id})" 

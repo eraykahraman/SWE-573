@@ -145,17 +145,17 @@
                                 <div class="comment-actions">
                                     <button onclick="handleVote({{ comment.id }}, 'upvote')" 
                                             class="btn btn-sm btn-outline-success {% if user in comment.likes.all %}active{% endif %}">
-                                        <i class="fas fa-thumbs-up"></i> Like
+                                        <i class="fas fa-thumbs-up"></i> <span>Like</span>
                                         <span class="like-count-{{ comment.id }}">{{ comment.total_likes }}</span>
                                     </button>
                                     <button onclick="handleVote({{ comment.id }}, 'downvote')" 
                                             class="btn btn-sm btn-outline-danger {% if user in comment.dislikes.all %}active{% endif %}">
-                                        <i class="fas fa-thumbs-down"></i> Dislike
+                                        <i class="fas fa-thumbs-down"></i> <span>Dislike</span>
                                         <span class="dislike-count-{{ comment.id }}">{{ comment.total_dislikes }}</span>
                                     </button>
                                     <button onclick="toggleReplyForm({{ comment.id }})" 
                                             class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-reply"></i> Reply
+                                        <i class="fas fa-reply"></i> <span>Reply</span>
                                     </button>
                                 </div>
 
@@ -328,6 +328,15 @@
         gap: 5px;
         padding: 4px 12px;
         transition: all 0.2s ease;
+        min-width: 90px; /* Ensure minimum width for buttons */
+    }
+
+    .comment-actions button i {
+        margin-right: 4px;
+    }
+
+    .comment-actions button span {
+        display: inline-block; /* Ensure text is always visible */
     }
 
     .comment-actions button:hover {

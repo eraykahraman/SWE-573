@@ -38,6 +38,11 @@ def home(request):
         posts = posts.filter(material__iexact=request.GET['material'])
         print(f"After material filter: {posts.count()} posts")
         
+    # Add status filter
+    if request.GET.get('status') and request.GET.get('status') != '':
+        posts = posts.filter(status=request.GET['status'])
+        print(f"After status filter: {posts.count()} posts")
+        
     # Handle all size dimensions
     if request.GET.get('size_x') and request.GET.get('size_x') != '':
         size_range = size_ranges.get(request.GET['size_x'])
@@ -51,7 +56,6 @@ def home(request):
             posts = posts.filter(size_y__gte=size_range[0], size_y__lt=size_range[1])
             print(f"After width filter: {posts.count()} posts")
             
-    # Fix: Change 'height' to 'size_z' in the GET parameter check
     if request.GET.get('size_z') and request.GET.get('size_z') != '':
         size_range = size_ranges.get(request.GET['size_z'])
         if size_range:

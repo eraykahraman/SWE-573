@@ -34,16 +34,18 @@
             <div class="row">
                 {% for post in user_posts %}
                     <div class="col-md-4 mb-4">
-                        <div class="card">
-                            {% if post.image %}
-                                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.name }}">
-                            {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title">{{ post.name }}</h5>
-                                <p class="card-text">{{ post.description|truncatechars:100 }}</p>
-                                <p class="text-muted">Posted on: {{ post.created_at|date:"F d, Y" }}</p>
+                        <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-dark">
+                            <div class="card">
+                                {% if post.image %}
+                                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ post.name }}</h5>
+                                    <p class="card-text">{{ post.description|truncatechars:100 }}</p>
+                                    <p class="text-muted">Posted on: {{ post.created_at|date:"F d, Y" }}</p>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 {% empty %}
                     <div class="col-12">

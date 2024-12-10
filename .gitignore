@@ -1,31 +1,38 @@
-# Python-specific
-*.pyc
-*.pyo
-*.pyd
-__pycache__/
-*.env
-*.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-myvenv/
+# Docker
+.docker
+docker-compose.override.yml
 
-# Django-specific
-db.sqlite3
-*.log
-*.pot
+# Python
+__pycache__
 *.py[cod]
-*.sqlite3
-*.sqlite3-journal
+*$py.class
+*.so
+.Python
+env
+build
+develop-eggs
+dist
+downloads
+eggs
+.eggs
+lib
+lib64
+parts
+sdist
+var
+*.egg-info
+.installed.cfg
+*.egg
 
-# Media and Static Files
-/media/
-/staticfiles/
+# Virtual Environment
+venv
+ENV
 
-# Migrations
-*/migrations/*.py
-!*/migrations/__init__.py
+# Media files
+media
 
-#
+# Database
+db.sqlite3
+
+# Environment variables
+.env

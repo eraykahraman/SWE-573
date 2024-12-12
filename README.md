@@ -112,9 +112,10 @@ mkdir -p nginx/conf.d certbot/conf certbot/www
 
 3. Set up environment variables in `.env` file:
 ```env
-POSTGRES_DB=eraydb
-POSTGRES_USER=erayswe
-POSTGRES_PASSWORD=swesweswe
+# Example environment variables
+POSTGRES_DB=<your_db_name>
+POSTGRES_USER=<your_db_user>
+POSTGRES_PASSWORD=<your_db_password>
 ```
 
 4. Start the services:

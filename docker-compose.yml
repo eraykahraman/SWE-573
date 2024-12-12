@@ -23,7 +23,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - static_volume:/app/staticfiles
       - media_volume:/app/media
       - ./certbot/conf:/etc/letsencrypt
@@ -39,37 +39,29 @@ services:
       - ./certbot/www:/var/www/certbot
     depends_on:
       - nginx
-    command: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   db:
     image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=eraydb
       - POSTGRES_USER=erayswe
       - POSTGRES_PASSWORD=swesweswe
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erayswe -d eraydb"]
+      test: ["CMD-SHELL", "pg_isready -U erayswe"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  celery:
-    build: .
-    command: celery -A myproject worker -l INFO
+  redis:
+    image: redis:7-alpine
     volumes:
-      - .:/app
-    environment:
-      - DATABASE_URL=postgres://erayswe:swesweswe@db:5432/eraydb
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
+      - redis_data:/data
 
 volumes:
   postgres_data:
+  redis_data:
   static_volume:
   media_volume:

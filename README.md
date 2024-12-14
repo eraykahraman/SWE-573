@@ -7,7 +7,6 @@ A full-stack web application that helps users identify unknown objects by levera
 ### Backend
 - **Django 4.2.17**: Python web framework for building the application
 - **PostgreSQL**: Primary database for storing application data
-- **Redis**: For caching and session management
 - **Gunicorn**: WSGI HTTP Server for running Django in production
 - **Celery**: For handling background tasks (future implementation)
 
@@ -180,8 +179,6 @@ The application is configured for production deployment with:
 4. Push to the branch
 5. Create a Pull Request
 
-## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
 
    
